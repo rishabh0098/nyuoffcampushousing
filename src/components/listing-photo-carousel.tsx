@@ -16,7 +16,15 @@ export function ListingPhotoCarousel({
 }) {
   const [index, setIndex] = useState(0);
 
-  if (photos.length === 0) return null;
+  // Keep the same reserved image height on every card — even ones without a
+  // photo — so titles/prices stay aligned across a row instead of jumping up.
+  if (photos.length === 0) {
+    return (
+      <div className="flex aspect-[4/3] items-center justify-center rounded-lg bg-surface text-xs text-ink-soft">
+        No photo
+      </div>
+    );
+  }
 
   const goTo = (next: number, event: React.MouseEvent) => {
     event.preventDefault();
