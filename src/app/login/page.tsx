@@ -23,7 +23,7 @@ function LoginError() {
 
 export default function LoginPage() {
   return (
-    <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-4 py-16">
+    <main className="relative flex flex-1 flex-col items-center justify-center overflow-hidden px-4 py-16">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-accent"

@@ -13,7 +13,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const session = await verifySession();
 
   return (
-    <div className="flex min-h-screen flex-col">
+    // flex-1 (not min-h-screen) — the root layout already provides the
+    // full-viewport height and renders the site footer below this.
+    <div className="flex flex-1 flex-col">
       <header className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-3 border-b border-border bg-surface/95 px-5 py-3 backdrop-blur-sm sm:px-8">
         <Link href="/listings" className="font-display text-lg text-ink">
           NYU Off-Campus Housing
