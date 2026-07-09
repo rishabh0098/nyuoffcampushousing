@@ -115,16 +115,14 @@ export function ListingFilterForm() {
         ))}
       </select>
 
-      {/* "mm/dd/yyyy" as a placeholder alone doesn't say *which* date it
-          is, so these two keep a small caption to stay unambiguous. */}
-      <DateField
+      <DateInput
         name="moveInBy"
-        caption="Move-in on or before"
+        placeholder="Lease begins mm/dd/yyyy"
         defaultValue={searchParams.get("moveInBy") ?? ""}
       />
-      <DateField
+      <DateInput
         name="leaseEndAfter"
-        caption="Lease must run until"
+        placeholder="Lease ends mm/dd/yyyy"
         defaultValue={searchParams.get("leaseEndAfter") ?? ""}
       />
 
@@ -208,22 +206,5 @@ export function ListingFilterForm() {
         Apply filters
       </button>
     </form>
-  );
-}
-
-function DateField({
-  name,
-  caption,
-  defaultValue,
-}: {
-  name: string;
-  caption: string;
-  defaultValue: string;
-}) {
-  return (
-    <label className="flex flex-col gap-1">
-      <span className="text-xs text-ink-soft">{caption}</span>
-      <DateInput name={name} defaultValue={defaultValue} />
-    </label>
   );
 }

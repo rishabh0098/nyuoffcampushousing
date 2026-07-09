@@ -33,11 +33,13 @@ export function DateInput({
   name,
   defaultValue = "",
   className = "input",
+  placeholder = "mm/dd/yyyy",
   onIsoChange,
 }: {
   name: string;
   defaultValue?: string;
   className?: string;
+  placeholder?: string;
   onIsoChange?: (iso: string) => void;
 }) {
   const [display, setDisplay] = useState(() => isoToDisplay(defaultValue));
@@ -48,7 +50,7 @@ export function DateInput({
       <input
         type="text"
         inputMode="numeric"
-        placeholder="mm/dd/yyyy"
+        placeholder={placeholder}
         value={display}
         onChange={(e) => {
           const next = formatAsTyped(e.target.value);
