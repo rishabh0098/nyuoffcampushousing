@@ -30,7 +30,10 @@ export default async function MyListingsPage() {
 
       {active.length > 0 && (
         <section>
-          <h2 className="eyebrow mb-3">Active</h2>
+          <h2 className="eyebrow mb-1">Active</h2>
+          <p className="mb-3 text-sm text-ink-soft">
+            Active listings automatically move to Inactive after 15 days unless reactivated.
+          </p>
           <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4">
             {active.map((listing) => (
               <ListingCard
@@ -51,9 +54,13 @@ export default async function MyListingsPage() {
 
       {inactive.length > 0 && (
         <section>
-          <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.12em] text-ink-soft">
+          <h2 className="mb-1 text-xs font-semibold uppercase tracking-[0.12em] text-ink-soft">
             Inactive
           </h2>
+          <p className="mb-3 text-sm text-ink-soft">
+            Inactive listings are private to you and are permanently deleted after 3 months
+            unless reactivated.
+          </p>
           <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4">
             {inactive.map((listing) => (
               <ListingCard
