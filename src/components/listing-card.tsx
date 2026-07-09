@@ -56,7 +56,10 @@ export function ListingCard({
   );
 
   return (
-    <div className="flex h-full flex-col gap-2">
+    // min-w-0 stops content (e.g. the remove-confirmation text) that doesn't
+    // naturally wrap from forcing this grid item — and therefore its whole
+    // column track — wider than its assigned width.
+    <div className="flex h-full min-w-0 flex-col gap-2">
       {href ? (
         <Link href={href} className="flex-1">
           {body}
@@ -64,7 +67,7 @@ export function ListingCard({
       ) : (
         <div className="flex-1">{body}</div>
       )}
-      {actions && <div className="flex gap-3 px-1">{actions}</div>}
+      {actions && <div className="flex flex-wrap items-start gap-2 px-1">{actions}</div>}
     </div>
   );
 }

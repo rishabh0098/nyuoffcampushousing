@@ -30,15 +30,19 @@ export function RemoveListingButton({ listingId }: { listingId: string }) {
 
   if (confirming) {
     return (
-      <span className="flex flex-wrap items-center gap-2 text-sm text-ink-soft">
-        Remove this listing? It will move to Inactive.
-        <button onClick={confirmRemove} disabled={pending} className="btn btn-danger px-3 py-1.5">
-          {pending ? "Removing…" : "Confirm"}
-        </button>
-        <button onClick={() => setConfirming(false)} className="btn btn-ghost px-2 py-1.5">
-          Cancel
-        </button>
-      </span>
+      // w-full so this stacks below any sibling action button (e.g. Edit)
+      // instead of squeezing onto the same line and forcing the card wider.
+      <div className="flex w-full flex-col gap-2 text-sm text-ink-soft">
+        <p>Remove this listing? It will move to Inactive.</p>
+        <div className="flex gap-2">
+          <button onClick={confirmRemove} disabled={pending} className="btn btn-danger px-3 py-1.5">
+            {pending ? "Removing…" : "Confirm"}
+          </button>
+          <button onClick={() => setConfirming(false)} className="btn btn-ghost px-2 py-1.5">
+            Cancel
+          </button>
+        </div>
+      </div>
     );
   }
 
