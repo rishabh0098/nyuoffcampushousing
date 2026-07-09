@@ -5,12 +5,18 @@ export default function GlossaryPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <h1 className="mb-4 text-lg font-semibold">Glossary</h1>
-      <dl className="flex flex-col gap-4">
+      <div className="mb-6 flex flex-col gap-1">
+        <span className="eyebrow">Reference</span>
+        <h1 className="font-display text-2xl text-ink">Glossary</h1>
+        <p className="text-sm text-ink-soft">
+          US renting terms you&apos;ll see on listings, explained.
+        </p>
+      </div>
+      <dl className="flex flex-col divide-y divide-border">
         {entries.map((entry) => (
-          <div key={entry.term}>
-            <dt className="font-medium">{entry.term}</dt>
-            <dd className="text-sm text-gray-600">{entry.definition}</dd>
+          <div key={entry.term} className="flex flex-col gap-1 py-4">
+            <dt className="font-display text-lg text-ink">{entry.term}</dt>
+            <dd className="text-sm leading-relaxed text-ink-soft">{entry.definition}</dd>
           </div>
         ))}
       </dl>

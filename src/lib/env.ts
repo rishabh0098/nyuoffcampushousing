@@ -20,11 +20,11 @@ export const env = {
   get sessionSecret() {
     return required("SESSION_SECRET");
   },
-  get resendApiKey() {
-    return required("RESEND_API_KEY");
+  get googleClientId() {
+    return required("GOOGLE_CLIENT_ID");
   },
-  get resendFromEmail() {
-    return process.env.RESEND_FROM_EMAIL ?? "NYU Off-Campus Housing <onboarding@resend.dev>";
+  get googleClientSecret() {
+    return required("GOOGLE_CLIENT_SECRET");
   },
   get blobReadWriteToken() {
     return required("BLOB_READ_WRITE_TOKEN");

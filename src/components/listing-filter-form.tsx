@@ -1,13 +1,17 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
+import { DateInput } from "@/components/date-input";
 import {
   CAMPUS_OPTIONS,
+  FURNISHED_STATUS_OPTIONS,
   GENDER_PREFERENCE_OPTIONS,
   LEASE_TYPE_OPTIONS,
+  NEIGHBORHOOD_OPTIONS,
 } from "@/lib/constants";
 
-// R7 — the eight filter dimensions for Available listings.
+// R7 — the filter dimensions for Available listings, laid out as a sidebar
+// since there are now too many to fit comfortably in a top bar.
 export function ListingFilterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -23,23 +27,44 @@ export function ListingFilterForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="mb-6 flex flex-wrap gap-3 text-sm">
-      <input
-        name="minRentCents"
-        type="number"
-        placeholder="Min rent ($)"
-        defaultValue={searchParams.get("minRentCents") ?? ""}
-        className="input w-32"
-        onChange={() => {}}
-      />
-      <input
-        name="maxRentCents"
-        type="number"
-        placeholder="Max rent ($)"
-        defaultValue={searchParams.get("maxRentCents") ?? ""}
-        className="input w-32"
-      />
-      <select name="campus" defaultValue={searchParams.get("campus") ?? ""} className="input">
+    <form onSubmit={onSubmit} className="tile flex w-full flex-col gap-4 p-4 text-sm lg:w-72">
+      <div className="grid grid-cols-2 gap-2">
+        <input
+          name="minRentCents"
+          type="number"
+          placeholder="Min rent ($)"
+          defaultValue={searchParams.get("minRentCents") ?? ""}
+          className="input"
+        />
+        <input
+          name="maxRentCents"
+          type="number"
+          placeholder="Max rent ($)"
+          defaultValue={searchParams.get("maxRentCents") ?? ""}
+          className="input"
+        />
+      </div>
+
+      <select
+        name="neighborhood"
+        defaultValue={searchParams.get("neighborhood") ?? ""}
+        aria-label="Neighborhood"
+        className="input"
+      >
+        <option value="">Any neighborhood</option>
+        {NEIGHBORHOOD_OPTIONS.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+
+      <select
+        name="campus"
+        defaultValue={searchParams.get("campus") ?? ""}
+        aria-label="Campus"
+        className="input"
+      >
         <option value="">Any campus</option>
         {CAMPUS_OPTIONS.map((o) => (
           <option key={o.value} value={o.value}>
@@ -47,22 +72,66 @@ export function ListingFilterForm() {
           </option>
         ))}
       </select>
+
       <input
-        name="minBedrooms"
+        name="maxDistanceMiles"
         type="number"
-        placeholder="Min bedrooms"
-        defaultValue={searchParams.get("minBedrooms") ?? ""}
-        className="input w-32"
-      />
-      <input
-        name="moveInBy"
-        type="date"
-        defaultValue={searchParams.get("moveInBy") ?? ""}
+        min={0}
+        step="0.1"
+        placeholder="Max distance from campus (mi)"
+        defaultValue={searchParams.get("maxDistanceMiles") ?? ""}
         className="input"
       />
+
+      <div className="grid grid-cols-2 gap-2">
+        <input
+          name="minBedrooms"
+          type="number"
+          placeholder="Min bedrooms"
+          defaultValue={searchParams.get("minBedrooms") ?? ""}
+          className="input"
+        />
+        <input
+          name="minBathrooms"
+          type="number"
+          step="0.5"
+          placeholder="Min bathrooms"
+          defaultValue={searchParams.get("minBathrooms") ?? ""}
+          className="input"
+        />
+      </div>
+
+      <select
+        name="furnishedStatus"
+        defaultValue={searchParams.get("furnishedStatus") ?? ""}
+        aria-label="Furnished"
+        className="input"
+      >
+        <option value="">Any furnished status</option>
+        {FURNISHED_STATUS_OPTIONS.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+
+      {/* "mm/dd/yyyy" as a placeholder alone doesn't say *which* date it
+          is, so these two keep a small caption to stay unambiguous. */}
+      <DateField
+        name="moveInBy"
+        caption="Move-in on or before"
+        defaultValue={searchParams.get("moveInBy") ?? ""}
+      />
+      <DateField
+        name="leaseEndAfter"
+        caption="Lease must run until"
+        defaultValue={searchParams.get("leaseEndAfter") ?? ""}
+      />
+
       <select
         name="leaseType"
         defaultValue={searchParams.get("leaseType") ?? ""}
+        aria-label="Lease type"
         className="input"
       >
         <option value="">Any lease type</option>
@@ -72,9 +141,11 @@ export function ListingFilterForm() {
           </option>
         ))}
       </select>
+
       <select
         name="genderPref"
         defaultValue={searchParams.get("genderPref") ?? ""}
+        aria-label="Gender preference"
         className="input"
       >
         <option value="">Any gender preference</option>
@@ -84,27 +155,75 @@ export function ListingFilterForm() {
           </option>
         ))}
       </select>
-      <label className="flex items-center gap-1">
-        <input
-          type="checkbox"
-          name="utilitiesIncl"
-          value="true"
-          defaultChecked={searchParams.get("utilitiesIncl") === "true"}
-        />
-        Utilities incl.
-      </label>
-      <label className="flex items-center gap-1">
-        <input
-          type="checkbox"
-          name="vegPreferred"
-          value="true"
-          defaultChecked={searchParams.get("vegPreferred") === "true"}
-        />
-        Vegetarian preferred
-      </label>
-      <button type="submit" className="rounded bg-black px-3 py-2 text-white">
+
+      <div className="flex flex-wrap gap-2">
+        <label className="checkbox-pill">
+          <input
+            type="checkbox"
+            name="utilitiesIncl"
+            value="true"
+            defaultChecked={searchParams.get("utilitiesIncl") === "true"}
+          />
+          Utilities incl.
+        </label>
+        <label className="checkbox-pill">
+          <input
+            type="checkbox"
+            name="wifiIncl"
+            value="true"
+            defaultChecked={searchParams.get("wifiIncl") === "true"}
+          />
+          Wifi incl.
+        </label>
+        <label className="checkbox-pill">
+          <input
+            type="checkbox"
+            name="acIncl"
+            value="true"
+            defaultChecked={searchParams.get("acIncl") === "true"}
+          />
+          AC in room
+        </label>
+        <label className="checkbox-pill">
+          <input
+            type="checkbox"
+            name="privateBathroom"
+            value="true"
+            defaultChecked={searchParams.get("privateBathroom") === "true"}
+          />
+          Private bathroom
+        </label>
+        <label className="checkbox-pill">
+          <input
+            type="checkbox"
+            name="vegPreferred"
+            value="true"
+            defaultChecked={searchParams.get("vegPreferred") === "true"}
+          />
+          Vegetarian preferred
+        </label>
+      </div>
+
+      <button type="submit" className="btn btn-primary">
         Apply filters
       </button>
     </form>
+  );
+}
+
+function DateField({
+  name,
+  caption,
+  defaultValue,
+}: {
+  name: string;
+  caption: string;
+  defaultValue: string;
+}) {
+  return (
+    <label className="flex flex-col gap-1">
+      <span className="text-xs text-ink-soft">{caption}</span>
+      <DateInput name={name} defaultValue={defaultValue} />
+    </label>
   );
 }

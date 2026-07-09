@@ -1,7 +1,16 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+
+export function EditListingButton({ listingId }: { listingId: string }) {
+  return (
+    <Link href={`/my-listings/${listingId}/edit`} className="btn btn-secondary px-3 py-1.5 text-xs">
+      Edit
+    </Link>
+  );
+}
 
 export function RemoveListingButton({ listingId }: { listingId: string }) {
   const router = useRouter();
@@ -21,16 +30,12 @@ export function RemoveListingButton({ listingId }: { listingId: string }) {
 
   if (confirming) {
     return (
-      <span className="flex items-center gap-2 text-sm">
+      <span className="flex flex-wrap items-center gap-2 text-sm text-ink-soft">
         Remove this listing? It will move to Inactive.
-        <button
-          onClick={confirmRemove}
-          disabled={pending}
-          className="rounded bg-red-600 px-2 py-1 text-white disabled:opacity-50"
-        >
+        <button onClick={confirmRemove} disabled={pending} className="btn btn-danger px-3 py-1.5">
           {pending ? "Removing…" : "Confirm"}
         </button>
-        <button onClick={() => setConfirming(false)} className="underline">
+        <button onClick={() => setConfirming(false)} className="btn btn-ghost px-2 py-1.5">
           Cancel
         </button>
       </span>
@@ -38,7 +43,7 @@ export function RemoveListingButton({ listingId }: { listingId: string }) {
   }
 
   return (
-    <button onClick={() => setConfirming(true)} className="text-sm text-red-600 underline">
+    <button onClick={() => setConfirming(true)} className="btn btn-danger-outline px-3 py-1.5 text-xs">
       Remove
     </button>
   );
@@ -59,7 +64,7 @@ export function ReactivateListingButton({ listingId }: { listingId: string }) {
   }
 
   return (
-    <button onClick={reactivate} disabled={pending} className="text-sm text-green-700 underline">
+    <button onClick={reactivate} disabled={pending} className="btn btn-success-outline px-3 py-1.5 text-xs">
       {pending ? "Reactivating…" : "Reactivate"}
     </button>
   );

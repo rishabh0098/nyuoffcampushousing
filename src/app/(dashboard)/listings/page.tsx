@@ -28,17 +28,30 @@ export default async function ListingsPage({
 
   return (
     <div>
-      <h1 className="mb-4 text-lg font-semibold">Available listings</h1>
-      <ListingFilterForm />
-      {listings.length === 0 ? (
-        <p className="text-gray-500">No matching listings found</p>
-      ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {listings.map((listing) => (
-            <ListingCard key={listing.id} listing={listing} href={`/listings/${listing.id}`} />
-          ))}
+      <div className="mb-6 flex flex-col gap-1">
+        <span className="eyebrow">Browse</span>
+        <h1 className="font-display text-2xl text-ink">Available listings</h1>
+      </div>
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
+        <div className="lg:sticky lg:top-6">
+          <ListingFilterForm />
         </div>
-      )}
+        <div className="flex-1">
+          {listings.length === 0 ? (
+            <p className="tile p-8 text-center text-ink-soft">No matching listings found</p>
+          ) : (
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4">
+              {listings.map((listing) => (
+                <ListingCard
+                  key={listing.id}
+                  listing={listing}
+                  href={`/listings/${listing.id}`}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

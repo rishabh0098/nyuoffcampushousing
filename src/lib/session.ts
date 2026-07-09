@@ -47,7 +47,7 @@ function sessionCookieOptions(expiresAt: Date) {
 
 /**
  * Sets the session cookie with a fresh SESSION_EXPIRY_DAYS-day expiry (KTD2).
- * Called on successful OTP verification, and refreshed by the proxy on every
+ * Called on successful Google sign-in, and refreshed by the proxy on every
  * authenticated request to implement the sliding window (R3).
  */
 export async function createSession(email: string): Promise<void> {

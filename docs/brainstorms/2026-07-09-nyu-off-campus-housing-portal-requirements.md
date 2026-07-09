@@ -7,7 +7,7 @@ topic: nyu-off-campus-housing-portal
 
 ## Summary
 
-An NYU-email-gated showcase portal where students, after a one-time OTP verification, stay signed in via a persistent session cookie and use a three-tab dashboard to browse and filter Available listings, manage My listings (add/remove), and read an alphabetical renting Glossary. Contact is direct via listing details. No profiles, bookings, or payments.
+An NYU-email-gated showcase portal where students sign in with their NYU Google account, stay signed in via a persistent session cookie, and use a three-tab dashboard to browse and filter Available listings, manage My listings (add/remove), and read an alphabetical renting Glossary. Contact is direct via listing details. No profiles, bookings, or payments.
 
 ---
 
@@ -21,8 +21,8 @@ The portal replaces that chaotic channel with a structured, NYU-only showcase. I
 
 ## Key Decisions
 
-- **One-time OTP, then a persistent session.** The site is gated: a verified `@nyu.edu` email via OTP is required before any content. After a successful OTP, a session cookie with a standard 5-day sliding expiry keeps the user signed in — OTP is not required again on the same browser until the session expires or the user is idle for 5 days.
-- **No registration or profiles, but sessions persist.** An NYU email plus OTP is enough to enter. No account setup, no profile page — but unlike a one-time-per-visit model, the session survives closing the browser and returning later, up to the 5-day expiry.
+- **Sign in with NYU Google account, then a persistent session.** The site is gated: signing in with a Google account on the `nyu.edu` Google Workspace domain is required before any content. Google (not the portal) verifies the student's identity; the portal only checks that the returned account's email/domain is `nyu.edu`. After a successful sign-in, a session cookie with a standard 5-day sliding expiry keeps the user signed in — Google sign-in is not required again on the same browser until the session expires or the user is idle for 5 days.
+- **No registration or profiles, but sessions persist.** Signing in with an NYU Google account is enough to enter. No account setup, no profile page, no passwords or codes to manage — and the session survives closing the browser and returning later, up to the 5-day expiry.
 - **Three-tab dashboard after login.** Every logged-in user sees: **Available listings** (default), **My listings**, and **Glossary**. No separate profile page.
 - **Listing ownership = poster’s NYU email.** Listings the user posted under their verified email appear on **My listings**, where they can remove them or add a new one — no extra re-auth step while already logged in.
 - **Auto-expiry after 15 days, with a private Inactive archive.** A listing automatically moves from Active to Inactive 15 days after it was posted or last reactivated. Removing a listing also moves it to Inactive immediately. Inactive listings never appear on Available listings and are visible only to the poster, in a dedicated Inactive section of **My listings**, where they can be reactivated (resetting the 15-day clock) or left alone. Inactive listings are permanently deleted after 3 months of inactivity. There is no public “taken” state — a listing is either live (Active) or gone from public view (Inactive).
@@ -44,8 +44,8 @@ The portal replaces that chaotic channel with a structured, NYU-only showcase. I
 - F1. Enter the portal
   - **Trigger:** Visitor opens the site with no active session.
   - **Actors:** A1
-  - **Steps:** Prompt for NYU email → send OTP → verify OTP → land on the dashboard (Available listings), with a session cookie set for future visits.
-  - **Outcome:** Authenticated access to all three tabs without further OTP until the session cookie expires (5-day sliding window) or the user signs out. Non-`@nyu.edu` emails are rejected. An incorrect or expired code shows an inline error with a path to request a new one.
+  - **Steps:** Click "Sign in with Google" → redirected to Google's sign-in/consent screen → Google authenticates the student and returns to the portal → portal checks the account's email is on the `nyu.edu` domain → land on the dashboard (Available listings), with a session cookie set for future visits.
+  - **Outcome:** Authenticated access to all three tabs without signing in again until the session cookie expires (5-day sliding window) or the user signs out. Non-`nyu.edu` Google accounts are rejected after Google sign-in completes. A rejected or failed sign-in shows an inline error with a path to retry.
   - **Covered by:** R1, R2, R3, R22
 
 - F2. Browse and filter listings
@@ -80,9 +80,9 @@ The portal replaces that chaotic channel with a structured, NYU-only showcase. I
 flowchart TB
   Visit[Open portal] --> Session{Valid session cookie?}
   Session -->|yes| Dash
-  Session -->|no| OTP{NYU email + OTP}
-  OTP -->|fail| Reject[Access denied]
-  OTP -->|ok| Dash[Dashboard — 5-day sliding session]
+  Session -->|no| Google{Sign in with Google}
+  Google -->|non-nyu.edu account| Reject[Access denied]
+  Google -->|nyu.edu account| Dash[Dashboard — 5-day sliding session]
   Dash --> Available[Available listings]
   Dash --> Mine[My listings: Active + Inactive]
   Dash --> Glossary[Glossary A-Z]
@@ -101,10 +101,10 @@ flowchart TB
 
 **Access**
 
-- R1. The entire site is inaccessible until the visitor verifies an `@nyu.edu` email with a one-time passcode.
-- R2. Non-NYU emails cannot receive a valid OTP or gain access.
-- R3. After a successful OTP, the user navigates freely across the dashboard, and stays signed in across browser restarts and future visits via a persistent session cookie with a 5-day sliding expiry (each authenticated visit resets the 5-day window). No account registration or profile. OTP is not required again on any tab, page change, or later visit until the session expires or the user is idle for 5 days.
-- R22. If the entered OTP is incorrect or expired, the user sees an inline error and can request a new code, subject to a standard resend cooldown and a small max-attempts limit before a fresh code request is required (exact thresholds set in planning, per the existing OTP rate-limit question below). This follows conventional OTP-auth practice while staying minimal — no account lockouts, CAPTCHAs, or extra verification factors beyond the OTP itself.
+- R1. The entire site is inaccessible until the visitor signs in with a Google account on the `nyu.edu` Google Workspace domain.
+- R2. Google accounts outside the `nyu.edu` domain cannot gain access, even if the sign-in with Google itself succeeds.
+- R3. After a successful sign-in, the user navigates freely across the dashboard, and stays signed in across browser restarts and future visits via a persistent session cookie with a 5-day sliding expiry (each authenticated visit resets the 5-day window). No account registration or profile. Sign-in is not required again on any tab, page change, or later visit until the session expires or the user is idle for 5 days.
+- R22. If Google sign-in fails, is cancelled, or returns an account outside the `nyu.edu` domain, the user sees an inline error on the login page and a button to retry. This follows conventional OAuth-auth practice while staying minimal — no separate passwords, codes, account lockouts, or CAPTCHAs; Google itself handles the identity verification and any of its own abuse controls.
 
 **Dashboard**
 
@@ -129,7 +129,7 @@ flowchart TB
 - R19. An Active listing automatically moves to Inactive 15 days after it was posted or last reactivated, with no action required from the poster.
 - R20. Reactivating an Inactive listing from My listings moves it back to Active — it reappears on Available listings and on the Active section of My listings — and restarts its 15-day expiry clock (R19).
 - R21. An Inactive listing is permanently deleted 3 months after it became Inactive if it is not reactivated before then. Inactive listings are never shown on Available listings and are visible only to the poster in My listings.
-- R23. Ownership checks for My Listings visibility, removal (R9, R14), and reactivation (R20) are enforced server-side against the email verified during OTP (e.g. via a signed/opaque session identifier) — never against a client-supplied or display-layer email value.
+- R23. Ownership checks for My Listings visibility, removal (R9, R14), and reactivation (R20) are enforced server-side against the email returned by Google sign-in (e.g. via a signed/opaque session identifier) — never against a client-supplied or display-layer email value.
 
 **Glossary**
 
@@ -145,17 +145,17 @@ flowchart TB
 
 ## Acceptance Examples
 
-- AE1. Non-NYU email blocked
+- AE1. Non-NYU Google account blocked
   - **Covers:** R1, R2
-  - **Given:** A visitor enters `student@gmail.com`
-  - **When:** They request an OTP
-  - **Then:** Access is denied; no portal content is shown
+  - **Given:** A visitor signs in with a personal Google account, `student@gmail.com`
+  - **When:** Google sign-in succeeds and returns to the portal
+  - **Then:** Access is denied because the account is not on the `nyu.edu` domain; no portal content is shown
 
-- AE2. Free navigation within and across sessions; OTP again only after 5 days idle
+- AE2. Free navigation within and across sessions; sign-in again only after 5 days idle
   - **Covers:** R3, R4
-  - **Given:** A student verified OTP and landed on Available listings
+  - **Given:** A student signed in with their NYU Google account and landed on Available listings
   - **When:** They switch to My listings, then Glossary, close the browser, and return the next day
-  - **Then:** No new OTP is required at any point — the session cookie keeps them signed in. Only after 5 days with no visit does the session expire, requiring a fresh OTP on the next visit
+  - **Then:** No new sign-in is required at any point — the session cookie keeps them signed in. Only after 5 days with no visit does the session expire, requiring a fresh sign-in on the next visit
 
 - AE3. Filter and compare without DMing
   - **Covers:** R5, R6, R7
@@ -216,7 +216,7 @@ flowchart TB
 
 **In v1**
 
-- NYU OTP once, then a persistent 5-day sliding-expiry session (no re-OTP on return visits within that window)
+- Sign in with NYU Google account once, then a persistent 5-day sliding-expiry session (no re-sign-in on return visits within that window)
 - Three-tab dashboard: Available listings, My listings, Glossary
 - Browse + filter live listings
 - Add / remove own listings from My listings (ownership by NYU email)
@@ -249,8 +249,9 @@ flowchart TB
 
 ## Dependencies / Assumptions
 
-- OTP delivery to `@nyu.edu` inboxes is feasible (email deliverability to NYU addresses works in the chosen environment).
-- “NYU email” means addresses the product treats as `@nyu.edu` (planning may refine aliases such as school-specific domains if needed).
+- NYU's Google Workspace domain is `nyu.edu`, and students sign in to it with their NYU Google account (this is the identity source of truth; the portal does not verify email addresses itself).
+- A Google Cloud OAuth 2.0 Client ID/Secret can be created (no NYU IT involvement required) and its authorized redirect URIs kept in sync with each deployment domain.
+- “NYU account” means Google accounts on the `nyu.edu` Workspace domain (planning may refine aliases such as school-specific subdomains if needed).
 - Students are willing to publish contact details on a student-only site.
 - Glossary starter copy will be drafted as part of build/content work.
 - The product is a showcase, not a party to any lease; disclaimers may be needed at planning/copy time.
@@ -264,6 +265,5 @@ flowchart TB
 - Exact listing field schema and validation rules (required vs optional beyond what R10–R12 pin).
 - How campus distance is captured (preset campuses vs free text vs approximate miles).
 - Photo limits (count, size, formats) and storage approach.
-- OTP provider and rate limits (resend cooldown, max attempts, max code requests per hour).
+- Google Cloud OAuth consent screen settings (app name, logo, verification status) and which redirect URIs to register for local/preview/production.
 - Glossary entry list for the v1 starter set.
-- Lightweight abuse controls (e.g. OTP rate limits) appropriate for a student showcase.

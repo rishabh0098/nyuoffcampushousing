@@ -1,16 +1,29 @@
-import type { Prisma, Campus, GenderPreference, LeaseType } from "@prisma/client";
+import type {
+  Prisma,
+  Campus,
+  FurnishedStatus,
+  GenderPreference,
+  LeaseType,
+  Neighborhood,
+} from "@prisma/client";
 
 export type ListingFilters = {
   minRentCents?: number;
   maxRentCents?: number;
-  neighborhood?: string;
+  neighborhood?: Neighborhood;
   campus?: Campus;
+  maxDistanceMiles?: number;
   minBedrooms?: number;
+  minBathrooms?: number;
+  furnishedStatus?: FurnishedStatus;
   moveInBy?: Date;
+  leaseEndAfter?: Date;
   leaseType?: LeaseType;
   guarantorReq?: boolean;
   utilitiesIncl?: boolean;
   wifiIncl?: boolean;
+  acIncl?: boolean;
+  privateBathroom?: boolean;
   vegPreferred?: boolean;
   genderPref?: GenderPreference;
 };
@@ -30,16 +43,30 @@ export function buildListingWhereClause(filters: ListingFilters): Prisma.Listing
     };
   }
   if (filters.neighborhood) {
-    where.neighborhood = { contains: filters.neighborhood, mode: "insensitive" };
+    where.neighborhood = filters.neighborhood;
   }
   if (filters.campus) {
     where.campus = filters.campus;
   }
+  if (filters.maxDistanceMiles !== undefined) {
+    where.distanceFromCampusMiles = { lte: filters.maxDistanceMiles };
+  }
   if (filters.minBedrooms !== undefined) {
     where.bedrooms = { gte: filters.minBedrooms };
   }
+  if (filters.minBathrooms !== undefined) {
+    where.bathrooms = { gte: filters.minBathrooms };
+  }
+  if (filters.furnishedStatus) {
+    where.furnishedStatus = filters.furnishedStatus;
+  }
   if (filters.moveInBy) {
     where.moveInDate = { lte: filters.moveInBy };
+  }
+  if (filters.leaseEndAfter) {
+    // A listing with no defined lease end (open-ended/new lease) is treated
+    // as satisfying any "must run until at least X" requirement.
+    where.OR = [{ leaseEndDate: null }, { leaseEndDate: { gte: filters.leaseEndAfter } }];
   }
   if (filters.leaseType) {
     where.leaseType = filters.leaseType;
@@ -52,6 +79,12 @@ export function buildListingWhereClause(filters: ListingFilters): Prisma.Listing
   }
   if (filters.wifiIncl !== undefined) {
     where.wifiIncl = filters.wifiIncl;
+  }
+  if (filters.acIncl !== undefined) {
+    where.acIncl = filters.acIncl;
+  }
+  if (filters.privateBathroom !== undefined) {
+    where.privateBathroom = filters.privateBathroom;
   }
   if (filters.vegPreferred !== undefined) {
     where.vegPreferred = filters.vegPreferred;
@@ -67,6 +100,8 @@ const BOOLEAN_KEYS = [
   "guarantorReq",
   "utilitiesIncl",
   "wifiIncl",
+  "acIncl",
+  "privateBathroom",
   "vegPreferred",
 ] as const satisfies readonly (keyof ListingFilters)[];
 
@@ -81,16 +116,28 @@ export function parseListingFilters(params: URLSearchParams): ListingFilters {
   if (maxRentCents) filters.maxRentCents = Number(maxRentCents);
 
   const neighborhood = params.get("neighborhood");
-  if (neighborhood) filters.neighborhood = neighborhood;
+  if (neighborhood) filters.neighborhood = neighborhood as Neighborhood;
 
   const campus = params.get("campus");
   if (campus) filters.campus = campus as Campus;
 
+  const maxDistanceMiles = params.get("maxDistanceMiles");
+  if (maxDistanceMiles) filters.maxDistanceMiles = Number(maxDistanceMiles);
+
   const minBedrooms = params.get("minBedrooms");
   if (minBedrooms) filters.minBedrooms = Number(minBedrooms);
 
+  const minBathrooms = params.get("minBathrooms");
+  if (minBathrooms) filters.minBathrooms = Number(minBathrooms);
+
+  const furnishedStatus = params.get("furnishedStatus");
+  if (furnishedStatus) filters.furnishedStatus = furnishedStatus as FurnishedStatus;
+
   const moveInBy = params.get("moveInBy");
   if (moveInBy) filters.moveInBy = new Date(moveInBy);
+
+  const leaseEndAfter = params.get("leaseEndAfter");
+  if (leaseEndAfter) filters.leaseEndAfter = new Date(leaseEndAfter);
 
   const leaseType = params.get("leaseType");
   if (leaseType) filters.leaseType = leaseType as LeaseType;

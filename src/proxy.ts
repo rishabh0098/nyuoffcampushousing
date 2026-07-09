@@ -37,7 +37,7 @@ export default async function proxy(request: NextRequest) {
   const response = NextResponse.next();
 
   // Sliding expiry (KTD2/R3): every authenticated request resets the
-  // cookie's Max-Age, so an active user is never re-prompted for OTP.
+  // cookie's Max-Age, so an active user is never re-prompted to sign in.
   if (session && token) {
     response.cookies.set(SESSION_COOKIE_NAME, token, {
       httpOnly: true,

@@ -27,14 +27,51 @@ enum LeaseType {
   Sublet
 }
 
+enum FurnishedStatus {
+  Furnished
+  PartiallyFurnished
+  Unfurnished
+}
+
 // Preset NYU campuses / neighborhoods (KTD5) — exact-match filtering without a
 // geocoding/mapping vendor dependency. Extend this list post-launch as needed.
 enum Campus {
   WashingtonSquare
   Brooklyn
   Tandon
+  Stern
   UnionSquare
   UpperEastSide
+  Other
+}
+
+// Preset list of popular NYC / Jersey City neighborhoods near NYU campuses
+// (KTD5) — same rationale as `Campus`: exact-match filtering, no geocoding.
+enum Neighborhood {
+  GreenwichVillage
+  EastVillage
+  WestVillage
+  Soho
+  Noho
+  UnionSquare
+  Gramercy
+  Chelsea
+  LowerEastSide
+  Chinatown
+  MurrayHill
+  KipsBay
+  UpperEastSide
+  BrooklynHeights
+  Dumbo
+  DowntownBrooklyn
+  Williamsburg
+  Bushwick
+  FortGreene
+  ClintonHill
+  JerseyCityDowntown
+  JerseyCityHeights
+  JournalSquare
+  Hoboken
   Other
 }
 
@@ -44,19 +81,29 @@ model Listing {
   status      ListingStatus @default(Active)
 
   // R10 structured fields
-  title         String
-  description   String
-  rentCents     Int
-  neighborhood  String
-  campus        Campus
-  bedrooms      Int
-  moveInDate    DateTime
-  leaseType     LeaseType
-  guarantorReq  Boolean          @default(false)
-  utilitiesIncl Boolean          @default(false)
-  wifiIncl      Boolean          @default(false)
-  vegPreferred  Boolean          @default(false)
-  genderPref    GenderPreference @default(NoPreference)
+  title                   String
+  description             String
+  rentCents               Int
+  neighborhood            Neighborhood
+  campus                  Campus
+  // Self-reported distance from the selected campus (R7) — a plain number,
+  // not geocoded (KTD5), so it's meaningful alongside `campus`, not instead
+  // of it: "campus" says which area, "distanceFromCampusMiles" says how far.
+  distanceFromCampusMiles Float            @default(0)
+  bedrooms                Int
+  bathrooms               Float            @default(1)
+  furnishedStatus         FurnishedStatus  @default(Unfurnished)
+  moveInDate              DateTime
+  // Optional — null means an open-ended/new lease with no known end date.
+  leaseEndDate            DateTime?
+  leaseType               LeaseType
+  guarantorReq            Boolean          @default(false)
+  utilitiesIncl           Boolean          @default(false)
+  wifiIncl                Boolean          @default(false)
+  acIncl                  Boolean          @default(false)
+  privateBathroom         Boolean          @default(false)
+  vegPreferred            Boolean          @default(false)
+  genderPref              GenderPreference @default(NoPreference)
 
   // R12 — at least one contact method required (enforced in application code)
   contactWhatsapp String?
@@ -79,24 +126,11 @@ model Listing {
 }
 
 model ListingPhoto {
-  id        String  @id @default(cuid())
+  id        String   @id @default(cuid())
   listingId String
-  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
   url       String
   createdAt DateTime @default(now())
 
   @@index([listingId])
-}
-
-model OtpCode {
-  id            String    @id @default(cuid())
-  email         String
-  codeHash      String
-  expiresAt     DateTime
-  attemptCount  Int       @default(0)
-  consumedAt    DateTime?
-  createdAt     DateTime  @default(now())
-
-  @@index([email])
-  @@index([email, createdAt])
 }

@@ -2,7 +2,13 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import { prisma } from "@/lib/db";
 import { verifySession } from "@/lib/session";
-import { CAMPUS_LABELS, GENDER_PREFERENCE_LABELS, LEASE_TYPE_LABELS } from "@/lib/constants";
+import {
+  CAMPUS_LABELS,
+  FURNISHED_STATUS_LABELS,
+  GENDER_PREFERENCE_LABELS,
+  LEASE_TYPE_LABELS,
+  NEIGHBORHOOD_LABELS,
+} from "@/lib/constants";
 
 // R6, R18 — full listing detail, including the poster's contact methods.
 // Direct contact only: no in-app messaging is offered here.
@@ -24,9 +30,14 @@ export default async function ListingDetailPage({
   }
 
   return (
-    <article className="mx-auto flex max-w-2xl flex-col gap-4">
-      <h1 className="text-xl font-semibold">{listing.title}</h1>
-      <p className="text-lg">${(listing.rentCents / 100).toFixed(0)}/mo</p>
+    <article className="mx-auto flex max-w-3xl flex-col gap-6">
+      <div>
+        <h1 className="font-display text-2xl text-ink">{listing.title}</h1>
+        <p className="mt-1 text-xl font-semibold text-accent">
+          ${(listing.rentCents / 100).toFixed(0)}
+          <span className="text-sm font-normal text-ink-soft">/mo</span>
+        </p>
+      </div>
 
       {listing.photos.length > 0 && (
         <div className="grid grid-cols-3 gap-2">
@@ -37,45 +48,53 @@ export default async function ListingDetailPage({
               alt={listing.title}
               width={200}
               height={150}
-              className="rounded object-cover"
+              className="aspect-[4/3] rounded-lg border border-border object-cover"
             />
           ))}
         </div>
       )}
 
-      <dl className="grid grid-cols-2 gap-2 text-sm">
-        <dt className="text-gray-500">Neighborhood</dt>
-        <dd>{listing.neighborhood}</dd>
-        <dt className="text-gray-500">Campus</dt>
-        <dd>{CAMPUS_LABELS[listing.campus]}</dd>
-        <dt className="text-gray-500">Bedrooms</dt>
-        <dd>{listing.bedrooms}</dd>
-        <dt className="text-gray-500">Move-in date</dt>
-        <dd>{listing.moveInDate.toDateString()}</dd>
-        <dt className="text-gray-500">Lease type</dt>
-        <dd>{LEASE_TYPE_LABELS[listing.leaseType]}</dd>
-        <dt className="text-gray-500">Guarantor required</dt>
-        <dd>{listing.guarantorReq ? "Yes" : "No"}</dd>
-        <dt className="text-gray-500">Utilities included</dt>
-        <dd>{listing.utilitiesIncl ? "Yes" : "No"}</dd>
-        <dt className="text-gray-500">Wifi included</dt>
-        <dd>{listing.wifiIncl ? "Yes" : "No"}</dd>
-        <dt className="text-gray-500">Vegetarian preferred</dt>
-        <dd>{listing.vegPreferred ? "Yes" : "No"}</dd>
-        <dt className="text-gray-500">Gender preference</dt>
-        <dd>{GENDER_PREFERENCE_LABELS[listing.genderPref]}</dd>
+      <dl className="tile grid grid-cols-2 gap-x-6 gap-y-3 p-5 text-sm sm:grid-cols-3">
+        <DetailItem label="Neighborhood" value={NEIGHBORHOOD_LABELS[listing.neighborhood]} />
+        <DetailItem label="Campus" value={CAMPUS_LABELS[listing.campus]} />
+        <DetailItem label="Distance from campus" value={`${listing.distanceFromCampusMiles} mi`} />
+        <DetailItem label="Bedrooms" value={listing.bedrooms} />
+        <DetailItem label="Bathrooms" value={listing.bathrooms} />
+        <DetailItem label="Furnished" value={FURNISHED_STATUS_LABELS[listing.furnishedStatus]} />
+        <DetailItem label="Move-in date" value={listing.moveInDate.toDateString()} />
+        <DetailItem
+          label="Lease ends"
+          value={listing.leaseEndDate ? listing.leaseEndDate.toDateString() : "Open-ended"}
+        />
+        <DetailItem label="Lease type" value={LEASE_TYPE_LABELS[listing.leaseType]} />
+        <DetailItem label="Guarantor required" value={listing.guarantorReq ? "Yes" : "No"} />
+        <DetailItem label="Utilities included" value={listing.utilitiesIncl ? "Yes" : "No"} />
+        <DetailItem label="Wifi included" value={listing.wifiIncl ? "Yes" : "No"} />
+        <DetailItem label="AC in room" value={listing.acIncl ? "Yes" : "No"} />
+        <DetailItem label="Private bathroom" value={listing.privateBathroom ? "Yes" : "No"} />
+        <DetailItem label="Vegetarian preferred" value={listing.vegPreferred ? "Yes" : "No"} />
+        <DetailItem label="Gender preference" value={GENDER_PREFERENCE_LABELS[listing.genderPref]} />
       </dl>
 
-      <p className="whitespace-pre-wrap text-sm">{listing.description}</p>
+      <p className="whitespace-pre-wrap text-sm leading-relaxed text-ink">{listing.description}</p>
 
-      <section className="rounded border border-gray-200 p-4">
-        <h2 className="mb-2 font-medium">Contact the poster</h2>
-        <ul className="flex flex-col gap-1 text-sm">
+      <section className="tile border-accent/30 bg-accent-soft/40 p-5">
+        <h2 className="font-display mb-2 text-lg text-ink">Contact the poster</h2>
+        <ul className="flex flex-col gap-1 text-sm text-ink">
           {listing.contactWhatsapp && <li>WhatsApp: {listing.contactWhatsapp}</li>}
           {listing.contactEmail && <li>Email: {listing.contactEmail}</li>}
           {listing.contactPhone && <li>Phone: {listing.contactPhone}</li>}
         </ul>
       </section>
     </article>
+  );
+}
+
+function DetailItem({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div>
+      <dt className="text-xs text-ink-soft">{label}</dt>
+      <dd className="font-medium text-ink">{value}</dd>
+    </div>
   );
 }

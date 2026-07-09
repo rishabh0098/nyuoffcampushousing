@@ -36,17 +36,46 @@ describe("buildListingWhereClause", () => {
     expect(where.moveInDate).toEqual({ lte: new Date("2026-09-01") });
   });
 
-  it("applies gender preference and guarantor/utilities/wifi filters", () => {
+  it("applies a max-distance-from-campus filter", () => {
+    const where = buildListingWhereClause({ campus: "Tandon", maxDistanceMiles: 2 });
+    expect(where.campus).toBe("Tandon");
+    expect(where.distanceFromCampusMiles).toEqual({ lte: 2 });
+  });
+
+  it("applies a lease-must-run-until filter, treating open-ended leases as satisfying it", () => {
+    const where = buildListingWhereClause({ leaseEndAfter: new Date("2026-12-01") });
+    expect(where.OR).toEqual([
+      { leaseEndDate: null },
+      { leaseEndDate: { gte: new Date("2026-12-01") } },
+    ]);
+  });
+
+  it("applies gender preference and guarantor/utilities/wifi/ac/private-bathroom filters", () => {
     const where = buildListingWhereClause({
       genderPref: "FemaleOnly",
       guarantorReq: false,
       utilitiesIncl: true,
       wifiIncl: true,
+      acIncl: true,
+      privateBathroom: true,
     });
     expect(where.genderPref).toBe("FemaleOnly");
     expect(where.guarantorReq).toBe(false);
     expect(where.utilitiesIncl).toBe(true);
     expect(where.wifiIncl).toBe(true);
+    expect(where.acIncl).toBe(true);
+    expect(where.privateBathroom).toBe(true);
+  });
+
+  it("applies a minimum-bathrooms and furnished-status filter", () => {
+    const where = buildListingWhereClause({ minBathrooms: 1.5, furnishedStatus: "Furnished" });
+    expect(where.bathrooms).toEqual({ gte: 1.5 });
+    expect(where.furnishedStatus).toBe("Furnished");
+  });
+
+  it("applies an exact neighborhood filter", () => {
+    const where = buildListingWhereClause({ neighborhood: "EastVillage" });
+    expect(where.neighborhood).toBe("EastVillage");
   });
 
   it("combines all provided filters with AND semantics (all must match)", () => {
@@ -80,6 +109,30 @@ describe("parseListingFilters", () => {
       campus: "Brooklyn",
       vegPreferred: true,
     });
+  });
+
+  it("parses the distance and lease-end filters", () => {
+    const params = new URLSearchParams({
+      maxDistanceMiles: "1.5",
+      leaseEndAfter: "2026-12-01",
+    });
+    const filters = parseListingFilters(params);
+    expect(filters.maxDistanceMiles).toBe(1.5);
+    expect(filters.leaseEndAfter).toEqual(new Date("2026-12-01"));
+  });
+
+  it("parses bathrooms, furnished status, ac, and private-bathroom filters", () => {
+    const params = new URLSearchParams({
+      minBathrooms: "1.5",
+      furnishedStatus: "Furnished",
+      acIncl: "true",
+      privateBathroom: "true",
+    });
+    const filters = parseListingFilters(params);
+    expect(filters.minBathrooms).toBe(1.5);
+    expect(filters.furnishedStatus).toBe("Furnished");
+    expect(filters.acIncl).toBe(true);
+    expect(filters.privateBathroom).toBe(true);
   });
 
   it("returns an empty object for no params", () => {
