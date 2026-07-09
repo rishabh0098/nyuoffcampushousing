@@ -32,6 +32,7 @@ export type ListingFormInitialValues = {
   wifiIncl: boolean;
   acIncl: boolean;
   privateBathroom: boolean;
+  laundryIncl: boolean;
   vegPreferred: boolean;
   genderPref: GenderPreference;
   contactWhatsapp: string;
@@ -107,6 +108,7 @@ export function ListingForm({
         wifiIncl: form.get("wifiIncl") === "on",
         acIncl: form.get("acIncl") === "on",
         privateBathroom: form.get("privateBathroom") === "on",
+        laundryIncl: form.get("laundryIncl") === "on",
         vegPreferred: form.get("vegPreferred") === "on",
         genderPref: form.get("genderPref"),
         contactWhatsapp: form.get("contactWhatsapp") || "",
@@ -272,6 +274,7 @@ export function ListingForm({
         label="Private bathroom"
         defaultChecked={initialValues?.privateBathroom}
       />
+      <Checkbox name="laundryIncl" label="In-unit laundry" defaultChecked={initialValues?.laundryIncl} />
       <Checkbox name="vegPreferred" label="Vegetarian preferred" defaultChecked={initialValues?.vegPreferred} />
       <Field label="Gender preference">
         <select

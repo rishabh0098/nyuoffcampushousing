@@ -31,6 +31,7 @@ export const ListingInputSchema = z
     wifiIncl: z.boolean().default(false),
     acIncl: z.boolean().default(false),
     privateBathroom: z.boolean().default(false),
+    laundryIncl: z.boolean().default(false),
     vegPreferred: z.boolean().default(false),
     genderPref: z.enum(GenderPreference).default("NoPreference"),
     contactWhatsapp: z.string().trim().max(40).optional().or(z.literal("")),

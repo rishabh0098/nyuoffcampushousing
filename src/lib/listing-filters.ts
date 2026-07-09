@@ -24,6 +24,7 @@ export type ListingFilters = {
   wifiIncl?: boolean;
   acIncl?: boolean;
   privateBathroom?: boolean;
+  laundryIncl?: boolean;
   vegPreferred?: boolean;
   genderPref?: GenderPreference;
 };
@@ -86,6 +87,9 @@ export function buildListingWhereClause(filters: ListingFilters): Prisma.Listing
   if (filters.privateBathroom !== undefined) {
     where.privateBathroom = filters.privateBathroom;
   }
+  if (filters.laundryIncl !== undefined) {
+    where.laundryIncl = filters.laundryIncl;
+  }
   if (filters.vegPreferred !== undefined) {
     where.vegPreferred = filters.vegPreferred;
   }
@@ -102,6 +106,7 @@ const BOOLEAN_KEYS = [
   "wifiIncl",
   "acIncl",
   "privateBathroom",
+  "laundryIncl",
   "vegPreferred",
 ] as const satisfies readonly (keyof ListingFilters)[];
 

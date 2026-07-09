@@ -72,6 +72,7 @@ export default async function ListingDetailPage({
         <DetailItem label="Wifi included" value={listing.wifiIncl ? "Yes" : "No"} />
         <DetailItem label="AC in room" value={listing.acIncl ? "Yes" : "No"} />
         <DetailItem label="Private bathroom" value={listing.privateBathroom ? "Yes" : "No"} />
+        <DetailItem label="In-unit laundry" value={listing.laundryIncl ? "Yes" : "No"} />
         <DetailItem label="Vegetarian preferred" value={listing.vegPreferred ? "Yes" : "No"} />
         <DetailItem label="Gender preference" value={GENDER_PREFERENCE_LABELS[listing.genderPref]} />
       </dl>

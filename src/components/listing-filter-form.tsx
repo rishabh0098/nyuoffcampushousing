@@ -194,6 +194,15 @@ export function ListingFilterForm() {
         <label className="checkbox-pill">
           <input
             type="checkbox"
+            name="laundryIncl"
+            value="true"
+            defaultChecked={searchParams.get("laundryIncl") === "true"}
+          />
+          In-unit laundry
+        </label>
+        <label className="checkbox-pill">
+          <input
+            type="checkbox"
             name="vegPreferred"
             value="true"
             defaultChecked={searchParams.get("vegPreferred") === "true"}

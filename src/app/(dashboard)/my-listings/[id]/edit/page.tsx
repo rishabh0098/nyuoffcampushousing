@@ -47,6 +47,7 @@ export default async function EditListingPage({
     wifiIncl: listing.wifiIncl,
     acIncl: listing.acIncl,
     privateBathroom: listing.privateBathroom,
+    laundryIncl: listing.laundryIncl,
     vegPreferred: listing.vegPreferred,
     genderPref: listing.genderPref,
     contactWhatsapp: listing.contactWhatsapp ?? "",

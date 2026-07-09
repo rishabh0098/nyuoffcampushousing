@@ -102,6 +102,7 @@ model Listing {
   wifiIncl                Boolean          @default(false)
   acIncl                  Boolean          @default(false)
   privateBathroom         Boolean          @default(false)
+  laundryIncl             Boolean          @default(false)
   vegPreferred            Boolean          @default(false)
   genderPref              GenderPreference @default(NoPreference)
 

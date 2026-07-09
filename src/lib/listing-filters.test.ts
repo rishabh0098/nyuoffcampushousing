@@ -50,7 +50,7 @@ describe("buildListingWhereClause", () => {
     ]);
   });
 
-  it("applies gender preference and guarantor/utilities/wifi/ac/private-bathroom filters", () => {
+  it("applies gender preference and guarantor/utilities/wifi/ac/private-bathroom/laundry filters", () => {
     const where = buildListingWhereClause({
       genderPref: "FemaleOnly",
       guarantorReq: false,
@@ -58,6 +58,7 @@ describe("buildListingWhereClause", () => {
       wifiIncl: true,
       acIncl: true,
       privateBathroom: true,
+      laundryIncl: true,
     });
     expect(where.genderPref).toBe("FemaleOnly");
     expect(where.guarantorReq).toBe(false);
@@ -65,6 +66,7 @@ describe("buildListingWhereClause", () => {
     expect(where.wifiIncl).toBe(true);
     expect(where.acIncl).toBe(true);
     expect(where.privateBathroom).toBe(true);
+    expect(where.laundryIncl).toBe(true);
   });
 
   it("applies a minimum-bathrooms and furnished-status filter", () => {
@@ -121,18 +123,20 @@ describe("parseListingFilters", () => {
     expect(filters.leaseEndAfter).toEqual(new Date("2026-12-01"));
   });
 
-  it("parses bathrooms, furnished status, ac, and private-bathroom filters", () => {
+  it("parses bathrooms, furnished status, ac, private-bathroom, and laundry filters", () => {
     const params = new URLSearchParams({
       minBathrooms: "1.5",
       furnishedStatus: "Furnished",
       acIncl: "true",
       privateBathroom: "true",
+      laundryIncl: "true",
     });
     const filters = parseListingFilters(params);
     expect(filters.minBathrooms).toBe(1.5);
     expect(filters.furnishedStatus).toBe("Furnished");
     expect(filters.acIncl).toBe(true);
     expect(filters.privateBathroom).toBe(true);
+    expect(filters.laundryIncl).toBe(true);
   });
 
   it("returns an empty object for no params", () => {
