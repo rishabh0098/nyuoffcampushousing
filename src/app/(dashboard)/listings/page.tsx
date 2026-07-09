@@ -23,6 +23,7 @@ export default async function ListingsPage({
 
   const listings = await prisma.listing.findMany({
     where,
+    include: { photos: true },
     orderBy: { createdAt: "desc" },
   });
 
