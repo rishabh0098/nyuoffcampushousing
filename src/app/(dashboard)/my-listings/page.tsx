@@ -32,7 +32,8 @@ export default async function MyListingsPage() {
         <section>
           <h2 className="eyebrow mb-1">Active</h2>
           <p className="mb-3 text-sm text-ink-soft">
-            Active listings automatically move to Inactive after 15 days unless reactivated.
+            Active listings automatically move to Inactive after 15 days and can be reactivated
+            again.
           </p>
           <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4">
             {active.map((listing) => (
