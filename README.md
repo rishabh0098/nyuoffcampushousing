@@ -1,36 +1,78 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# NYU Off-Campus Housing Portal
 
-## Getting Started
+An NYU-email-gated showcase for off-campus housing listings. OTP-verified
+students browse and filter Available listings, manage their own listings on
+My Listings (Active/Inactive, with 15-day auto-expiry and reactivation), and
+read an alphabetical renting glossary. No bookings, payments, or in-app
+messaging — see [`docs/plans`](./docs/plans) for the full plan and
+[`docs/brainstorms`](./docs/brainstorms) for the originating requirements.
 
-First, run the development server:
+## Stack
+
+- [Next.js 16](https://nextjs.org) (App Router, TypeScript, Tailwind CSS)
+- [Prisma](https://www.prisma.io) + Postgres
+- [Resend](https://resend.com) for OTP emails
+- [Vercel Blob](https://vercel.com/docs/storage/vercel-blob) for listing photos
+- [Vercel Cron](https://vercel.com/docs/cron-jobs) for the listing lifecycle job
+
+> **Note:** this project targets Next.js 16, which renamed Middleware to
+> [Proxy](https://nextjs.org/docs/app/api-reference/file-conventions/proxy)
+> (`src/proxy.ts`) — functionality is the same, just the file name and export
+> changed.
+
+## Getting started
+
+1. Install dependencies:
+
+   ```bash
+   npm install
+   ```
+
+2. Copy `.env.example` to `.env.local` and fill in real values:
+
+   ```bash
+   cp .env.example .env.local
+   ```
+
+   You'll need:
+   - A Postgres connection string (`DATABASE_URL`) — [Vercel Postgres](https://vercel.com/docs/storage/vercel-postgres) or [Neon](https://neon.tech) both work.
+   - A session signing secret (`SESSION_SECRET`) — generate with `openssl rand -base64 32`.
+   - A [Resend](https://resend.com) API key and verified sending address.
+   - A [Vercel Blob](https://vercel.com/docs/storage/vercel-blob) read/write token.
+   - A `CRON_SECRET` shared with the Vercel Cron job config in `vercel.json` — generate with `openssl rand -base64 32`.
+
+3. Apply the Prisma schema to your database:
+
+   ```bash
+   npx prisma migrate dev
+   ```
+
+4. Run the dev server:
+
+   ```bash
+   npm run dev
+   ```
+
+## Testing
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm test        # run once
+npm run test:watch
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Unit tests focus on the logic most likely to regress silently without a
+database in the loop: OTP verification/rate-limit outcomes (`src/lib/otp.test.ts`),
+listing filter query-building (`src/lib/listing-filters.test.ts`), and listing
+lifecycle expiry thresholds (`src/lib/listing-lifecycle.test.ts`). Full
+request/response integration testing requires a real Postgres database.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `src/app/login` — OTP sign-in (email → code, two-step form)
+- `src/app/(dashboard)` — the three-tab dashboard: Available listings, My
+  listings, Glossary (shared nav in `layout.tsx`)
+- `src/app/api` — route handlers for auth, listings, listing photos, and the
+  lifecycle cron job
+- `src/lib` — framework-agnostic logic: session/OTP/listings/filters/lifecycle
+- `src/proxy.ts` — session check + sliding-expiry refresh on every request
+- `prisma/schema.prisma` — data model

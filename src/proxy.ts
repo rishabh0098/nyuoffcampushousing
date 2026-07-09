@@ -6,20 +6,27 @@ import { SESSION_EXPIRY_DAYS } from "./lib/constants";
 // Next.js 16 renamed Middleware to Proxy; functionality is unchanged. This
 // performs the optimistic session check the framework recommends — real
 // authorization still happens server-side in the DAL (src/lib/session.ts).
-const PUBLIC_PATHS = new Set(["/login"]);
+const PUBLIC_PAGE_PATHS = new Set(["/login"]);
 
 export default async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  if (pathname.startsWith("/api/cron")) {
+  // The cron job authenticates via CRON_SECRET (checked in the route itself),
+  // and the auth API routes are how a session gets created/destroyed in the
+  // first place — neither should be gated behind an existing session.
+  if (pathname.startsWith("/api/cron") || pathname.startsWith("/api/auth")) {
     return NextResponse.next();
   }
 
   const token = request.cookies.get(SESSION_COOKIE_NAME)?.value;
   const session = await decryptSession(token);
-  const isPublicPath = PUBLIC_PATHS.has(pathname);
+  const isPublicPath = PUBLIC_PAGE_PATHS.has(pathname);
+  const isApiPath = pathname.startsWith("/api");
 
   if (!session && !isPublicPath) {
+    if (isApiPath) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
