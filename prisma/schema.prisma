@@ -1,0 +1,102 @@
+// NYU Off-Campus Housing Portal — data model.
+// Postgres via Prisma, deployed on Vercel (KTD1).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ListingStatus {
+  Active
+  Inactive
+}
+
+enum GenderPreference {
+  NoPreference
+  FemaleOnly
+  MaleOnly
+}
+
+enum LeaseType {
+  NewLease
+  LeaseTakeover
+  Sublet
+}
+
+// Preset NYU campuses / neighborhoods (KTD5) — exact-match filtering without a
+// geocoding/mapping vendor dependency. Extend this list post-launch as needed.
+enum Campus {
+  WashingtonSquare
+  Brooklyn
+  Tandon
+  UnionSquare
+  UpperEastSide
+  Other
+}
+
+model Listing {
+  id          String        @id @default(cuid())
+  posterEmail String
+  status      ListingStatus @default(Active)
+
+  // R10 structured fields
+  title         String
+  description   String
+  rentCents     Int
+  neighborhood  String
+  campus        Campus
+  bedrooms      Int
+  moveInDate    DateTime
+  leaseType     LeaseType
+  guarantorReq  Boolean          @default(false)
+  utilitiesIncl Boolean          @default(false)
+  wifiIncl      Boolean          @default(false)
+  vegPreferred  Boolean          @default(false)
+  genderPref    GenderPreference @default(NoPreference)
+
+  // R12 — at least one contact method required (enforced in application code)
+  contactWhatsapp String?
+  contactEmail    String?
+  contactPhone    String?
+
+  photos ListingPhoto[]
+
+  // R19–R21 lifecycle timestamps
+  activatedAt   DateTime  @default(now())
+  inactivatedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([posterEmail])
+  @@index([status, activatedAt])
+  @@index([status, inactivatedAt])
+}
+
+model ListingPhoto {
+  id        String  @id @default(cuid())
+  listingId String
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  url       String
+  createdAt DateTime @default(now())
+
+  @@index([listingId])
+}
+
+model OtpCode {
+  id            String    @id @default(cuid())
+  email         String
+  codeHash      String
+  expiresAt     DateTime
+  attemptCount  Int       @default(0)
+  consumedAt    DateTime?
+  createdAt     DateTime  @default(now())
+
+  @@index([email])
+  @@index([email, createdAt])
+}
