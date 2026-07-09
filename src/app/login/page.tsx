@@ -60,7 +60,7 @@ export default function LoginPage() {
           className="flex items-center justify-center gap-3 rounded-lg border border-border bg-surface-raised px-4 py-3 text-sm font-medium text-ink shadow-sm transition-colors hover:border-accent hover:bg-accent-soft"
         >
           <GoogleLogo />
-          Sign in with Google
+          Sign in with NYU email
         </a>
       </div>
     </main>
