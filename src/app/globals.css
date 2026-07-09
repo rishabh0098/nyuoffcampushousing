@@ -111,6 +111,20 @@ h3,
   box-shadow: 0 0 0 3px var(--color-accent-soft);
 }
 
+/* Hide the native dropdown caret on every <select> across the site — we
+   don't render a custom one, so this just removes the browser's default
+   arrow glyph rather than replacing it with anything. */
+select.input {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: none;
+}
+
+select.input::-ms-expand {
+  display: none;
+}
+
 .checkbox-pill {
   display: inline-flex;
   align-items: center;
