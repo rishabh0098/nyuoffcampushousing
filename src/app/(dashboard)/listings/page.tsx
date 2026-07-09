@@ -38,10 +38,12 @@ export default async function ListingsPage({
           <ListingFilterForm />
         </div>
         <div className="flex-1">
+          {/* auto-fill (not auto-fit) keeps unused column tracks reserved,
+              so a lone remaining card doesn't stretch to fill the row. */}
           {listings.length === 0 ? (
             <p className="tile p-8 text-center text-ink-soft">No matching listings found</p>
           ) : (
-            <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4">
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4">
               {listings.map((listing) => (
                 <ListingCard
                   key={listing.id}

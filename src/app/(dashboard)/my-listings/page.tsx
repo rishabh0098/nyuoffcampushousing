@@ -31,7 +31,7 @@ export default async function MyListingsPage() {
       {active.length > 0 && (
         <section>
           <h2 className="eyebrow mb-3">Active</h2>
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4">
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4">
             {active.map((listing) => (
               <ListingCard
                 key={listing.id}
@@ -54,7 +54,7 @@ export default async function MyListingsPage() {
           <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.12em] text-ink-soft">
             Inactive
           </h2>
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4">
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4">
             {inactive.map((listing) => (
               <ListingCard
                 key={listing.id}
