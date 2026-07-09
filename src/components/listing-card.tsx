@@ -1,7 +1,7 @@
-import Image from "next/image";
 import Link from "next/link";
 import type { Listing, ListingPhoto } from "@prisma/client";
 import { CAMPUS_LABELS, FURNISHED_STATUS_LABELS } from "@/lib/constants";
+import { ListingPhotoCarousel } from "./listing-photo-carousel";
 
 export function ListingCard({
   listing,
@@ -29,26 +29,7 @@ export function ListingCard({
     // than staying its own shorter content height and leaving the grid
     // cell's leftover space invisible below it.
     <div className="tile tile-interactive flex h-full flex-col gap-3 p-4">
-      {listing.photos.length > 0 && (
-        <div
-          className={
-            listing.photos.length === 1
-              ? "aspect-[4/3] overflow-hidden rounded-lg"
-              : "grid grid-cols-2 gap-1 [&>*:first-child]:col-span-2"
-          }
-        >
-          {listing.photos.slice(0, 3).map((photo) => (
-            <Image
-              key={photo.id}
-              src={photo.url}
-              alt=""
-              width={320}
-              height={240}
-              className="aspect-[4/3] h-full w-full rounded-lg border border-border object-cover"
-            />
-          ))}
-        </div>
-      )}
+      <ListingPhotoCarousel photos={listing.photos} />
       <h3 className="font-display text-lg text-ink">{listing.title}</h3>
       <p className="text-lg font-semibold text-accent">
         ${(listing.rentCents / 100).toFixed(0)}
