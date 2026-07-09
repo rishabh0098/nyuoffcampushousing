@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { ConfirmModal } from "./confirm-modal";
 
 export function EditListingButton({ listingId }: { listingId: string }) {
   return (
@@ -28,28 +29,24 @@ export function RemoveListingButton({ listingId }: { listingId: string }) {
     }
   }
 
-  if (confirming) {
-    return (
-      // w-full so this stacks below any sibling action button (e.g. Edit)
-      // instead of squeezing onto the same line and forcing the card wider.
-      <div className="flex w-full flex-col gap-2 text-sm text-ink-soft">
-        <p>Remove this listing? It will move to Inactive.</p>
-        <div className="flex gap-2">
-          <button onClick={confirmRemove} disabled={pending} className="btn btn-danger px-3 py-1.5">
-            {pending ? "Removing…" : "Confirm"}
-          </button>
-          <button onClick={() => setConfirming(false)} className="btn btn-ghost px-2 py-1.5">
-            Cancel
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <button onClick={() => setConfirming(true)} className="btn btn-danger-outline px-3 py-1.5 text-xs">
-      Remove
-    </button>
+    <>
+      <button onClick={() => setConfirming(true)} className="btn btn-danger-outline px-3 py-1.5 text-xs">
+        Remove
+      </button>
+      {confirming && (
+        <ConfirmModal
+          title="Remove this listing?"
+          description="It will move to Inactive and disappear from Available listings. You can reactivate it later from My listings."
+          confirmLabel="Remove"
+          pendingLabel="Removing…"
+          pending={pending}
+          danger
+          onConfirm={confirmRemove}
+          onCancel={() => setConfirming(false)}
+        />
+      )}
+    </>
   );
 }
 
