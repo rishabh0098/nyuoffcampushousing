@@ -1,7 +1,6 @@
 /**
- * Instant fallback while a dashboard tab's RSC payload is still loading.
- * The header/nav (in layout.tsx) stay put; only the main content swaps to
- * this skeleton, so tab clicks feel responsive even when Neon is slow.
+ * Fallback while the dashboard layout/page RSC payload is loading
+ * (e.g. session check on first navigation to /listings).
  */
 export default function DashboardLoading() {
   return (

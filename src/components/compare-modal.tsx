@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { useRouter } from "next/navigation";
 import type { Listing, ListingPhoto } from "@prisma/client";
 import {
   AREA_LABELS,
@@ -16,8 +17,16 @@ import { ListingPhotoCarousel } from "@/components/listing-photo-carousel";
 type ComparableListing = Listing & { photos: ListingPhoto[] };
 
 export function CompareModal({ onClose }: { onClose: () => void }) {
+  const router = useRouter();
   const { selectedIds, remove } = useCompare();
   const [listings, setListings] = useState<ComparableListing[] | null>(null);
+
+  function openListing(id: string) {
+    const url = new URL(window.location.href);
+    url.searchParams.set("listing", id);
+    router.replace(`${url.pathname}?${url.searchParams.toString()}`, { scroll: false });
+    onClose();
+  }
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -73,7 +82,7 @@ export function CompareModal({ onClose }: { onClose: () => void }) {
               Nothing left to compare — the selected listings are no longer available.
             </p>
           ) : (
-            <CompareTable listings={listings} onRemove={remove} />
+            <CompareTable listings={listings} onRemove={remove} onOpen={openListing} />
           )}
         </div>
       </div>
@@ -85,9 +94,11 @@ export function CompareModal({ onClose }: { onClose: () => void }) {
 function CompareTable({
   listings,
   onRemove,
+  onOpen,
 }: {
   listings: ComparableListing[];
   onRemove: (id: string) => void;
+  onOpen: (id: string) => void;
 }) {
   const cheapestId = bestByMin(listings, (l) => l.rentCents);
   const closestId = bestByMin(listings, (l) => l.distanceFromCampusMiles);
@@ -110,12 +121,13 @@ function CompareTable({
               <div className="flex flex-col gap-2">
                 <ListingPhotoCarousel photos={listing.photos} />
                 <div className="flex min-w-0 items-start justify-between gap-2">
-                  <a
-                    href={`/listings/${listing.id}`}
-                    className="font-display min-w-0 truncate text-ink hover:underline"
+                  <button
+                    type="button"
+                    onClick={() => onOpen(listing.id)}
+                    className="font-display min-w-0 truncate text-left text-ink hover:underline"
                   >
                     {listing.title}
-                  </a>
+                  </button>
                   <button
                     onClick={() => onRemove(listing.id)}
                     className="btn btn-ghost shrink-0 px-1.5 py-1 text-xs"

@@ -1,11 +1,10 @@
-import Link from "next/link";
 import type { Listing, ListingPhoto } from "@prisma/client";
 import { CAMPUS_LABELS, FURNISHED_STATUS_LABELS } from "@/lib/constants";
 import { ListingPhotoCarousel } from "./listing-photo-carousel";
 
 export function ListingCard({
   listing,
-  href,
+  onOpen,
   actions,
 }: {
   listing: Pick<
@@ -20,7 +19,7 @@ export function ListingCard({
     | "furnishedStatus"
     | "vegPreferred"
   > & { photos: Pick<ListingPhoto, "id" | "url">[] };
-  href?: string;
+  onOpen?: () => void;
   actions?: React.ReactNode;
 }) {
   const body = (
@@ -56,14 +55,13 @@ export function ListingCard({
   );
 
   return (
-    // min-w-0 stops content (e.g. the remove-confirmation text) that doesn't
-    // naturally wrap from forcing this grid item — and therefore its whole
-    // column track — wider than its assigned width.
+    // min-w-0 stops content that doesn't naturally wrap from forcing this
+    // grid item — and therefore its whole column track — wider than assigned.
     <div className="flex h-full min-w-0 flex-col gap-2">
-      {href ? (
-        <Link href={href} className="flex-1">
+      {onOpen ? (
+        <button type="button" onClick={onOpen} className="flex-1 text-left">
           {body}
-        </Link>
+        </button>
       ) : (
         <div className="flex-1">{body}</div>
       )}

@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Image from "next/image";
 import type { Area, Campus, FurnishedStatus, GenderPreference, LeaseType } from "@prisma/client";
@@ -51,12 +50,15 @@ export function ListingForm({
   mode,
   listingId,
   initialValues,
+  onCancel,
+  onSuccess,
 }: {
   mode: "create" | "edit";
   listingId?: string;
   initialValues?: ListingFormInitialValues;
+  onCancel: () => void;
+  onSuccess: () => void;
 }) {
-  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [photos, setPhotos] = useState<File[]>([]);
@@ -138,22 +140,14 @@ export function ListingForm({
         return;
       }
 
-      router.push("/my-listings");
-      router.refresh();
+      onSuccess();
     } finally {
       setPending(false);
     }
   }
 
   return (
-    <form onSubmit={onSubmit} className="mx-auto flex max-w-lg flex-col gap-4">
-      <div className="mb-2 flex flex-col gap-1">
-        <span className="eyebrow">{mode === "create" ? "New listing" : "Edit listing"}</span>
-        <h1 className="font-display text-2xl text-ink">
-          {mode === "create" ? "Add a listing" : "Edit listing"}
-        </h1>
-      </div>
-
+    <form onSubmit={onSubmit} className="flex flex-col gap-4">
       <Field label="Title">
         <input name="title" required defaultValue={initialValues?.title} className="input" />
       </Field>
@@ -374,9 +368,14 @@ export function ListingForm({
         </p>
       )}
 
-      <button type="submit" disabled={pending} className="btn btn-primary">
-        {pending ? "Saving…" : mode === "create" ? "Submit listing" : "Save changes"}
-      </button>
+      <div className="flex flex-wrap gap-2">
+        <button type="button" onClick={onCancel} className="btn btn-ghost">
+          Cancel
+        </button>
+        <button type="submit" disabled={pending} className="btn btn-primary">
+          {pending ? "Saving…" : mode === "create" ? "Submit listing" : "Save changes"}
+        </button>
+      </div>
     </form>
   );
 }

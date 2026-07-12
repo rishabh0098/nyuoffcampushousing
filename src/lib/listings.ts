@@ -6,11 +6,9 @@ import {
   FurnishedStatus,
   GenderPreference,
   LeaseType,
-  ListingStatus,
   type Listing,
 } from "@prisma/client";
 import { prisma } from "./db";
-import { ACTIVE_LISTING_EXPIRY_DAYS } from "./constants";
 
 export const ListingInputSchema = z
   .object({
@@ -65,23 +63,6 @@ export async function createListing(posterEmail: string, input: ListingInput): P
       photos: { create: photoUrls.map((url) => ({ url })) },
     },
   });
-}
-
-/**
- * Fetches a listing for editing — scoped to the caller's own *Active*
- * listings only (editing an Inactive listing doesn't make sense; reactivate
- * it first). Throws the same OwnershipError as the other mutators so a
- * mismatched owner or wrong status looks like "not found", not "forbidden".
- */
-export async function getEditableListing(id: string, callerEmail: string) {
-  const listing = await prisma.listing.findFirst({
-    where: { id, posterEmail: callerEmail, status: "Active" },
-    include: { photos: true },
-  });
-  if (!listing) {
-    throw new OwnershipError();
-  }
-  return listing;
 }
 
 /**
@@ -161,9 +142,3 @@ export async function reactivateListing(id: string, callerEmail: string): Promis
     throw new OwnershipError();
   }
 }
-
-export function activeExpiryCutoff(now: Date): Date {
-  return new Date(now.getTime() - ACTIVE_LISTING_EXPIRY_DAYS * 24 * 60 * 60 * 1000);
-}
-
-export { ListingStatus };

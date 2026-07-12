@@ -1,7 +1,9 @@
-import { notFound } from "next/navigation";
+"use client";
+
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
-import { prisma } from "@/lib/db";
-import { verifySession } from "@/lib/session";
+import type { Listing, ListingPhoto } from "@prisma/client";
 import {
   AREA_LABELS,
   CAMPUS_LABELS,
@@ -10,27 +12,78 @@ import {
   LEASE_TYPE_LABELS,
 } from "@/lib/constants";
 
-// R6, R18 — full listing detail, including the poster's contact methods.
-// Direct contact only: no in-app messaging is offered here.
-export default async function ListingDetailPage({
-  params,
+type DetailListing = Listing & { photos: ListingPhoto[] };
+
+export function ListingDetailModal({
+  listingId,
+  onClose,
 }: {
-  params: Promise<{ id: string }>;
+  listingId: string;
+  onClose: () => void;
 }) {
-  await verifySession();
-  const { id } = await params;
+  const [listing, setListing] = useState<DetailListing | null | undefined>(undefined);
 
-  const listing = await prisma.listing.findFirst({
-    where: { id, status: "Active" },
-    include: { photos: true },
-  });
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [onClose]);
 
-  if (!listing) {
-    notFound();
-  }
+  useEffect(() => {
+    let cancelled = false;
+    setListing(undefined);
+    fetch(`/api/listings/${listingId}`)
+      .then(async (res) => {
+        if (!res.ok) throw new Error("not found");
+        return res.json() as Promise<{ listing: DetailListing }>;
+      })
+      .then((data) => {
+        if (!cancelled) setListing(data.listing);
+      })
+      .catch(() => {
+        if (!cancelled) setListing(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [listingId]);
 
+  return createPortal(
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/50 p-4" onClick={onClose}>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Listing details"
+        className="tile flex max-h-[85vh] w-full max-w-3xl flex-col overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-border p-4">
+          <h2 className="font-display text-lg text-ink">Listing details</h2>
+          <button type="button" onClick={onClose} className="btn btn-ghost px-2 py-1.5" aria-label="Close">
+            Close
+          </button>
+        </div>
+
+        <div className="overflow-auto p-4">
+          {listing === undefined ? (
+            <p className="text-sm text-ink-soft">Loading…</p>
+          ) : listing === null ? (
+            <p className="text-sm text-ink-soft">This listing is no longer available.</p>
+          ) : (
+            <DetailBody listing={listing} />
+          )}
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
+function DetailBody({ listing }: { listing: DetailListing }) {
   return (
-    <article className="mx-auto flex max-w-3xl flex-col gap-6">
+    <article className="flex flex-col gap-6">
       <div>
         <h1 className="font-display text-2xl text-ink">{listing.title}</h1>
         <p className="mt-1 text-xl font-semibold text-accent">
@@ -63,10 +116,10 @@ export default async function ListingDetailPage({
         <DetailItem label="Bedrooms" value={listing.bedrooms} />
         <DetailItem label="Bathrooms" value={listing.bathrooms} />
         <DetailItem label="Furnished" value={FURNISHED_STATUS_LABELS[listing.furnishedStatus]} />
-        <DetailItem label="Move-in date" value={listing.moveInDate.toDateString()} />
+        <DetailItem label="Move-in date" value={new Date(listing.moveInDate).toDateString()} />
         <DetailItem
           label="Lease ends"
-          value={listing.leaseEndDate ? listing.leaseEndDate.toDateString() : "Open-ended"}
+          value={listing.leaseEndDate ? new Date(listing.leaseEndDate).toDateString() : "Open-ended"}
         />
         <DetailItem label="Lease type" value={LEASE_TYPE_LABELS[listing.leaseType]} />
         <DetailItem label="Guarantor required" value={listing.guarantorReq ? "Yes" : "No"} />

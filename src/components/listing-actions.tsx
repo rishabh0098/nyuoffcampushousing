@@ -1,22 +1,23 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ConfirmModal } from "./confirm-modal";
-import { useDashboardShell } from "@/lib/dashboard-shell-context";
 
-export function EditListingButton({ listingId }: { listingId: string }) {
+export function EditListingButton({ onEdit }: { onEdit: () => void }) {
   return (
-    <Link href={`/my-listings/${listingId}/edit`} className="btn btn-secondary px-3 py-1.5 text-xs">
+    <button type="button" onClick={onEdit} className="btn btn-secondary px-3 py-1.5 text-xs">
       Edit
-    </Link>
+    </button>
   );
 }
 
-export function RemoveListingButton({ listingId }: { listingId: string }) {
-  const router = useRouter();
-  const shell = useDashboardShell();
+export function RemoveListingButton({
+  listingId,
+  onMutated,
+}: {
+  listingId: string;
+  onMutated?: () => void;
+}) {
   const [confirming, setConfirming] = useState(false);
   const [pending, setPending] = useState(false);
 
@@ -24,11 +25,7 @@ export function RemoveListingButton({ listingId }: { listingId: string }) {
     setPending(true);
     try {
       await fetch(`/api/listings/${listingId}`, { method: "DELETE" });
-      if (shell?.clientTabMode) {
-        await shell.afterMutation();
-      } else {
-        router.refresh();
-      }
+      onMutated?.();
     } finally {
       setPending(false);
       setConfirming(false);
@@ -56,20 +53,20 @@ export function RemoveListingButton({ listingId }: { listingId: string }) {
   );
 }
 
-export function ReactivateListingButton({ listingId }: { listingId: string }) {
-  const router = useRouter();
-  const shell = useDashboardShell();
+export function ReactivateListingButton({
+  listingId,
+  onMutated,
+}: {
+  listingId: string;
+  onMutated?: () => void;
+}) {
   const [pending, setPending] = useState(false);
 
   async function reactivate() {
     setPending(true);
     try {
       await fetch(`/api/listings/${listingId}/reactivate`, { method: "POST" });
-      if (shell?.clientTabMode) {
-        await shell.afterMutation();
-      } else {
-        router.refresh();
-      }
+      onMutated?.();
     } finally {
       setPending(false);
     }

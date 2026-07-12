@@ -1,9 +1,10 @@
-import { verifySession } from "@/lib/session";
-import { DashboardTabs } from "@/components/dashboard-tabs";
+import { Suspense } from "react";
+import { DashboardApp } from "@/components/dashboard-app";
 
-// R5–R8, R24 — Available listings tab root. Data loads client-side (cached)
-// so tab switches among dashboard roots do not re-query Neon via RSC.
-export default async function ListingsPage() {
-  await verifySession();
-  return <DashboardTabs />;
+export default function ListingsPage() {
+  return (
+    <Suspense fallback={<p className="text-sm text-ink-soft">Loading…</p>}>
+      <DashboardApp />
+    </Suspense>
+  );
 }

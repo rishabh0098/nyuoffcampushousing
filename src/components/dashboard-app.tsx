@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import type { Listing, ListingPhoto } from "@prisma/client";
 import { ListingCard } from "@/components/listing-card";
 import { ListingFilterForm } from "@/components/listing-filter-form";
@@ -13,8 +13,14 @@ import {
   ReactivateListingButton,
   RemoveListingButton,
 } from "@/components/listing-actions";
+import { ListingDetailModal } from "@/components/listing-detail-modal";
+import { ListingFormModal } from "@/components/listing-form-modal";
 import { getGlossaryEntries } from "@/lib/glossary";
-import { useDashboardShell } from "@/lib/dashboard-shell-context";
+import {
+  buildDashboardHref,
+  getFilterQueryString,
+  parseDashTab,
+} from "@/lib/dashboard-url";
 import {
   clearCachedBucket,
   formatRetrySeconds,
@@ -35,7 +41,6 @@ type CardListing = Pick<
   | "bathrooms"
   | "furnishedStatus"
   | "vegPreferred"
-  | "status"
 > & { photos: Pick<ListingPhoto, "id" | "url">[] };
 
 type MinePayload = { active: CardListing[]; inactive: CardListing[] };
@@ -67,12 +72,14 @@ function RefreshControls({
 }
 
 function AvailablePanel({
-  queryString,
-  onQueryStringChange,
+  filterQuery,
+  onFilterQueryChange,
+  onOpenListing,
   mutationNonce,
 }: {
-  queryString: string;
-  onQueryStringChange: (q: string) => void;
+  filterQuery: string;
+  onFilterQueryChange: (q: string) => void;
+  onOpenListing: (id: string) => void;
   mutationNonce: number;
 }) {
   const [listings, setListings] = useState<CardListing[] | null>(null);
@@ -82,7 +89,7 @@ function AvailablePanel({
 
   const load = useCallback(
     async (opts: { force: boolean; bypassRateLimit: boolean }) => {
-      const cached = readCachedJson<CardListing[]>("available", queryString);
+      const cached = readCachedJson<CardListing[]>("available", filterQuery);
 
       if (!opts.force && cached) {
         setListings(cached);
@@ -91,8 +98,6 @@ function AvailablePanel({
         return;
       }
 
-      // Rate limit is global for Available fetches (not per filter), so changing
-      // filters cannot bypass the cooldown.
       if (!opts.bypassRateLimit) {
         const gate = getFetchGate("available");
         if (!gate.allowed) {
@@ -111,7 +116,7 @@ function AvailablePanel({
       setError(null);
       try {
         const res = await fetch(
-          `/api/listings/search${queryString ? `?${queryString}` : ""}`
+          `/api/listings/search${filterQuery ? `?${filterQuery}` : ""}`
         );
         if (!res.ok) {
           setError("Could not load listings.");
@@ -119,7 +124,7 @@ function AvailablePanel({
         }
         const data = (await res.json()) as { listings: CardListing[] };
         setListings(data.listings);
-        writeCachedJson("available", queryString, data.listings);
+        writeCachedJson("available", filterQuery, data.listings);
         markFetched("available");
         setRateLimitedSeconds(null);
       } catch {
@@ -128,7 +133,7 @@ function AvailablePanel({
         setPending(false);
       }
     },
-    [queryString]
+    [filterQuery]
   );
 
   useEffect(() => {
@@ -140,8 +145,7 @@ function AvailablePanel({
 
   useEffect(() => {
     if (mutationNonce === 0) return;
-    clearCachedBucket("available", queryString);
-    // Defer so we don't sync-setState inside the effect body (lint).
+    clearCachedBucket("available", filterQuery);
     const id = window.setTimeout(() => {
       void load({ force: true, bypassRateLimit: true });
     }, 0);
@@ -179,15 +183,7 @@ function AvailablePanel({
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
           <div className="lg:sticky lg:top-6">
             <ListingFilterForm
-              onApplyFilters={(params) => {
-                const next = params.toString();
-                onQueryStringChange(next);
-                window.history.replaceState(
-                  { dashTab: "listings" },
-                  "",
-                  next ? `/listings?${next}` : "/listings"
-                );
-              }}
+              onApplyFilters={(params) => onFilterQueryChange(params.toString())}
             />
           </div>
           <div className="flex-1">
@@ -206,7 +202,7 @@ function AvailablePanel({
                   <ListingCard
                     key={listing.id}
                     listing={listing}
-                    href={`/listings/${listing.id}`}
+                    onOpen={() => onOpenListing(listing.id)}
                     actions={<CompareToggle listingId={listing.id} />}
                   />
                 ))}
@@ -220,7 +216,19 @@ function AvailablePanel({
   );
 }
 
-function MyListingsPanel({ mutationNonce }: { mutationNonce: number }) {
+function MyListingsPanel({
+  mutationNonce,
+  onOpenListing,
+  onAdd,
+  onEdit,
+  onMutated,
+}: {
+  mutationNonce: number;
+  onOpenListing: (id: string) => void;
+  onAdd: () => void;
+  onEdit: (id: string) => void;
+  onMutated: () => void;
+}) {
   const [data, setData] = useState<MinePayload | null>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -317,9 +325,9 @@ function MyListingsPanel({ mutationNonce }: { mutationNonce: number }) {
             rateLimitedSeconds={rateLimitedSeconds}
             onRefresh={() => void load({ force: true, bypassRateLimit: false })}
           />
-          <Link href="/my-listings/new" className="btn btn-primary">
+          <button type="button" onClick={onAdd} className="btn btn-primary">
             Add listing
-          </Link>
+          </button>
         </div>
       </div>
 
@@ -347,11 +355,11 @@ function MyListingsPanel({ mutationNonce }: { mutationNonce: number }) {
               <ListingCard
                 key={listing.id}
                 listing={listing}
-                href={`/listings/${listing.id}`}
+                onOpen={() => onOpenListing(listing.id)}
                 actions={
                   <>
-                    <EditListingButton listingId={listing.id} />
-                    <RemoveListingButton listingId={listing.id} />
+                    <EditListingButton onEdit={() => onEdit(listing.id)} />
+                    <RemoveListingButton listingId={listing.id} onMutated={onMutated} />
                   </>
                 }
               />
@@ -374,7 +382,9 @@ function MyListingsPanel({ mutationNonce }: { mutationNonce: number }) {
               <ListingCard
                 key={listing.id}
                 listing={listing}
-                actions={<ReactivateListingButton listingId={listing.id} />}
+                actions={
+                  <ReactivateListingButton listingId={listing.id} onMutated={onMutated} />
+                }
               />
             ))}
           </div>
@@ -408,28 +418,110 @@ function GlossaryPanel() {
 }
 
 /**
- * Client tab panels for Available / My listings / Glossary. Kept mounted while
- * switching tabs so data stays in memory; sessionStorage covers reload spam.
+ * Single-route dashboard: tabs via `?tab=`, detail/add/edit via modal query params.
  */
-export function DashboardTabs() {
-  const shell = useDashboardShell();
-  if (!shell?.clientTabMode || !shell.tab) return null;
+export function DashboardApp() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const tab = parseDashTab(searchParams);
+  const filterQuery = getFilterQueryString(searchParams);
+  const listingId = searchParams.get("listing");
+  const editId = searchParams.get("edit");
+  const showNew = searchParams.get("new") === "1";
+
+  const [mutationNonce, setMutationNonce] = useState(0);
+
+  const replaceUrl = useCallback(
+    (href: string) => {
+      router.replace(href, { scroll: false });
+    },
+    [router]
+  );
+
+  const setFilterQuery = useCallback(
+    (filters: string) => {
+      replaceUrl(buildDashboardHref({ tab: "available", filters }));
+    },
+    [replaceUrl]
+  );
+
+  const openListing = useCallback(
+    (id: string) => {
+      replaceUrl(
+        buildDashboardHref({
+          tab,
+          filters: tab === "available" ? filterQuery : undefined,
+          listing: id,
+        })
+      );
+    },
+    [tab, filterQuery, replaceUrl]
+  );
+
+  const openNew = useCallback(() => {
+    replaceUrl(buildDashboardHref({ tab: "mine", newListing: true }));
+  }, [replaceUrl]);
+
+  const openEdit = useCallback(
+    (id: string) => {
+      replaceUrl(buildDashboardHref({ tab: "mine", edit: id }));
+    },
+    [replaceUrl]
+  );
+
+  const closeModal = useCallback(() => {
+    replaceUrl(
+      buildDashboardHref({
+        tab,
+        filters: tab === "available" ? filterQuery : undefined,
+      })
+    );
+  }, [tab, filterQuery, replaceUrl]);
+
+  const afterSave = useCallback(() => {
+    setMutationNonce((n) => n + 1);
+    replaceUrl(buildDashboardHref({ tab: "mine" }));
+  }, [replaceUrl]);
+
+  const bumpMutation = useCallback(() => {
+    setMutationNonce((n) => n + 1);
+  }, []);
 
   return (
     <>
-      <div hidden={shell.tab !== "listings"}>
+      <div hidden={tab !== "available"}>
         <AvailablePanel
-          queryString={shell.listingsQuery}
-          onQueryStringChange={shell.setListingsQuery}
-          mutationNonce={shell.mutationNonce}
+          filterQuery={filterQuery}
+          onFilterQueryChange={setFilterQuery}
+          onOpenListing={openListing}
+          mutationNonce={mutationNonce}
         />
       </div>
-      <div hidden={shell.tab !== "my-listings"}>
-        <MyListingsPanel mutationNonce={shell.mutationNonce} />
+      <div hidden={tab !== "mine"}>
+        <MyListingsPanel
+          mutationNonce={mutationNonce}
+          onOpenListing={openListing}
+          onAdd={openNew}
+          onEdit={openEdit}
+          onMutated={bumpMutation}
+        />
       </div>
-      <div hidden={shell.tab !== "glossary"}>
+      <div hidden={tab !== "glossary"}>
         <GlossaryPanel />
       </div>
+
+      {listingId && <ListingDetailModal listingId={listingId} onClose={closeModal} />}
+      {showNew && (
+        <ListingFormModal mode="create" onClose={closeModal} onSaved={afterSave} />
+      )}
+      {editId && (
+        <ListingFormModal
+          mode="edit"
+          listingId={editId}
+          onClose={closeModal}
+          onSaved={afterSave}
+        />
+      )}
     </>
   );
 }

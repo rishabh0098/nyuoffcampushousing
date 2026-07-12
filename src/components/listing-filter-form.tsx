@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { DateInput } from "@/components/date-input";
 import {
   AREA_OPTIONS,
@@ -15,10 +15,8 @@ import {
 export function ListingFilterForm({
   onApplyFilters,
 }: {
-  /** When set, filters apply client-side (no App Router navigation). */
-  onApplyFilters?: (params: URLSearchParams) => void;
+  onApplyFilters: (params: URLSearchParams) => void;
 }) {
-  const router = useRouter();
   const searchParams = useSearchParams();
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -28,11 +26,7 @@ export function ListingFilterForm({
     for (const [key, value] of form.entries()) {
       if (typeof value === "string" && value !== "") params.set(key, value);
     }
-    if (onApplyFilters) {
-      onApplyFilters(params);
-      return;
-    }
-    router.push(`/listings?${params.toString()}`);
+    onApplyFilters(params);
   }
 
   return (
