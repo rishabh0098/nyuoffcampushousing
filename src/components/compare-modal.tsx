@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { useRouter } from "next/navigation";
 import type { Listing, ListingPhoto } from "@prisma/client";
 import {
   AREA_LABELS,
@@ -12,19 +11,18 @@ import {
   LEASE_TYPE_LABELS,
 } from "@/lib/constants";
 import { useCompare } from "@/lib/compare-context";
+import { useDashboardNav } from "@/lib/dashboard-nav-context";
 import { ListingPhotoCarousel } from "@/components/listing-photo-carousel";
 
 type ComparableListing = Listing & { photos: ListingPhoto[] };
 
 export function CompareModal({ onClose }: { onClose: () => void }) {
-  const router = useRouter();
+  const { openListing } = useDashboardNav();
   const { selectedIds, remove } = useCompare();
   const [listings, setListings] = useState<ComparableListing[] | null>(null);
 
-  function openListing(id: string) {
-    const url = new URL(window.location.href);
-    url.searchParams.set("listing", id);
-    router.replace(`${url.pathname}?${url.searchParams.toString()}`, { scroll: false });
+  function openListingFromCompare(id: string) {
+    openListing(id);
     onClose();
   }
 
@@ -82,7 +80,7 @@ export function CompareModal({ onClose }: { onClose: () => void }) {
               Nothing left to compare — the selected listings are no longer available.
             </p>
           ) : (
-            <CompareTable listings={listings} onRemove={remove} onOpen={openListing} />
+            <CompareTable listings={listings} onRemove={remove} onOpen={openListingFromCompare} />
           )}
         </div>
       </div>

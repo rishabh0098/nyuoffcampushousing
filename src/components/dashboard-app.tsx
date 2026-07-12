@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
 import type { Listing, ListingPhoto } from "@prisma/client";
 import { ListingCard } from "@/components/listing-card";
 import { ListingFilterForm } from "@/components/listing-filter-form";
@@ -16,11 +15,7 @@ import {
 import { ListingDetailModal } from "@/components/listing-detail-modal";
 import { ListingFormModal } from "@/components/listing-form-modal";
 import { getGlossaryEntries } from "@/lib/glossary";
-import {
-  buildDashboardHref,
-  getFilterQueryString,
-  parseDashTab,
-} from "@/lib/dashboard-url";
+import { useDashboardNav } from "@/lib/dashboard-nav-context";
 import {
   clearCachedBucket,
   formatRetrySeconds,
@@ -419,69 +414,30 @@ function GlossaryPanel() {
 
 /**
  * Single-route dashboard: tabs via `?tab=`, detail/add/edit via modal query params.
+ * URL updates use history.pushState (see DashboardNavProvider) so panels stay
+ * mounted and tab switches stay instant.
  */
 export function DashboardApp() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const tab = parseDashTab(searchParams);
-  const filterQuery = getFilterQueryString(searchParams);
-  const listingId = searchParams.get("listing");
-  const editId = searchParams.get("edit");
-  const showNew = searchParams.get("new") === "1";
+  const {
+    tab,
+    filterQuery,
+    listingId,
+    editId,
+    showNew,
+    setFilterQuery,
+    openListing,
+    openNew,
+    openEdit,
+    closeModal,
+    goToMine,
+  } = useDashboardNav();
 
   const [mutationNonce, setMutationNonce] = useState(0);
 
-  const replaceUrl = useCallback(
-    (href: string) => {
-      router.replace(href, { scroll: false });
-    },
-    [router]
-  );
-
-  const setFilterQuery = useCallback(
-    (filters: string) => {
-      replaceUrl(buildDashboardHref({ tab: "available", filters }));
-    },
-    [replaceUrl]
-  );
-
-  const openListing = useCallback(
-    (id: string) => {
-      replaceUrl(
-        buildDashboardHref({
-          tab,
-          filters: tab === "available" ? filterQuery : undefined,
-          listing: id,
-        })
-      );
-    },
-    [tab, filterQuery, replaceUrl]
-  );
-
-  const openNew = useCallback(() => {
-    replaceUrl(buildDashboardHref({ tab: "mine", newListing: true }));
-  }, [replaceUrl]);
-
-  const openEdit = useCallback(
-    (id: string) => {
-      replaceUrl(buildDashboardHref({ tab: "mine", edit: id }));
-    },
-    [replaceUrl]
-  );
-
-  const closeModal = useCallback(() => {
-    replaceUrl(
-      buildDashboardHref({
-        tab,
-        filters: tab === "available" ? filterQuery : undefined,
-      })
-    );
-  }, [tab, filterQuery, replaceUrl]);
-
   const afterSave = useCallback(() => {
     setMutationNonce((n) => n + 1);
-    replaceUrl(buildDashboardHref({ tab: "mine" }));
-  }, [replaceUrl]);
+    goToMine();
+  }, [goToMine]);
 
   const bumpMutation = useCallback(() => {
     setMutationNonce((n) => n + 1);

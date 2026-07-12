@@ -1,13 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import {
-  buildDashboardHref,
-  getFilterQueryString,
-  parseDashTab,
-  type DashTab,
-} from "@/lib/dashboard-url";
+import { useDashboardNav } from "@/lib/dashboard-nav-context";
+import type { DashTab } from "@/lib/dashboard-url";
 
 const TABS: { id: DashTab; label: string }[] = [
   { id: "available", label: "Available listings" },
@@ -16,23 +10,17 @@ const TABS: { id: DashTab; label: string }[] = [
 ];
 
 export function DashboardNav() {
-  const searchParams = useSearchParams();
-  const tab = parseDashTab(searchParams);
-  const filterQuery = getFilterQueryString(searchParams);
+  const { tab, setTab } = useDashboardNav();
 
   return (
     <nav className="flex gap-1 text-sm font-medium">
       {TABS.map((t) => {
         const active = tab === t.id;
         return (
-          <Link
+          <button
             key={t.id}
-            href={buildDashboardHref({
-              tab: t.id,
-              filters: t.id === "available" ? filterQuery : undefined,
-            })}
-            prefetch={false}
-            scroll={false}
+            type="button"
+            onClick={() => setTab(t.id)}
             className={`rounded-full px-3 py-1.5 transition-colors ${
               active
                 ? "bg-accent-soft text-accent"
@@ -40,7 +28,7 @@ export function DashboardNav() {
             }`}
           >
             {t.label}
-          </Link>
+          </button>
         );
       })}
     </nav>
