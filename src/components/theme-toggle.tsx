@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { IconMoon, IconSun } from "@/components/icons";
 
 const STORAGE_KEY = "theme";
 
@@ -41,9 +42,9 @@ export function ThemeToggle() {
         applyTheme(next ? "dark" : "light");
       }}
       aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
-      className="btn btn-ghost h-9 w-9 p-0 text-lg"
+      className="btn btn-ghost h-9 w-9 p-0"
     >
-      {isDark ? "☀️" : "🌙"}
+      {isDark ? <IconSun size={18} /> : <IconMoon size={18} />}
     </button>
   );
 }

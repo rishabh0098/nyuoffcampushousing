@@ -11,6 +11,7 @@ import {
   GENDER_PREFERENCE_LABELS,
   LEASE_TYPE_LABELS,
 } from "@/lib/constants";
+import { ModalCloseButton } from "@/components/icons";
 
 type DetailListing = Listing & { photos: ListingPhoto[] };
 
@@ -61,9 +62,7 @@ export function ListingDetailModal({
       >
         <div className="flex items-center justify-between border-b border-border p-4">
           <h2 className="font-display text-lg text-ink">Listing details</h2>
-          <button type="button" onClick={onClose} className="btn btn-ghost px-2 py-1.5" aria-label="Close">
-            Close
-          </button>
+          <ModalCloseButton onClick={onClose} />
         </div>
 
         <div className="overflow-auto p-4">

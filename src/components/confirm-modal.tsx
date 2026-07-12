@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
+import { IconCheck, IconTrash, IconX } from "@/components/icons";
 
 /**
  * Small centered confirmation modal, rendered via a portal so it always
@@ -49,14 +50,23 @@ export function ConfirmModal({
         <h2 className="font-display text-lg text-ink">{title}</h2>
         <p className="mt-2 text-sm text-ink-soft">{description}</p>
         <div className="mt-5 flex justify-end gap-2">
-          <button onClick={onCancel} className="btn btn-ghost px-3 py-1.5 text-sm">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="btn btn-ghost inline-flex items-center gap-1.5 px-3 py-1.5 text-sm"
+          >
+            <IconX size={14} />
             Cancel
           </button>
           <button
+            type="button"
             onClick={onConfirm}
             disabled={pending}
-            className={`px-3 py-1.5 text-sm ${danger ? "btn btn-danger" : "btn btn-primary"}`}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm ${
+              danger ? "btn btn-danger" : "btn btn-primary"
+            }`}
           >
+            {danger ? <IconTrash size={14} /> : <IconCheck size={14} />}
             {pending ? pendingLabel : confirmLabel}
           </button>
         </div>

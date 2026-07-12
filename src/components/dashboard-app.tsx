@@ -24,6 +24,7 @@ import {
   readCachedJson,
   writeCachedJson,
 } from "@/lib/tab-data-cache";
+import { IconPlus, IconRefresh } from "@/components/icons";
 
 type CardListing = Pick<
   Listing,
@@ -55,8 +56,9 @@ function RefreshControls({
         type="button"
         onClick={onRefresh}
         disabled={pending || rateLimitedSeconds !== null}
-        className="btn btn-secondary px-3 py-1.5 text-xs"
+        className="btn btn-secondary inline-flex items-center gap-1.5 px-3 py-1.5 text-xs"
       >
+        <IconRefresh size={14} className={pending ? "animate-spin" : undefined} />
         {pending ? "Refreshing…" : "Refresh"}
       </button>
       {rateLimitedSeconds !== null && (
@@ -315,12 +317,12 @@ function MyListingsPanel({
           <h1 className="font-display text-2xl text-ink">My listings</h1>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <RefreshControls
-            pending={pending}
-            rateLimitedSeconds={rateLimitedSeconds}
-            onRefresh={() => void load({ force: true, bypassRateLimit: false })}
-          />
-          <button type="button" onClick={onAdd} className="btn btn-primary">
+          <button
+            type="button"
+            onClick={onAdd}
+            className="btn btn-primary inline-flex items-center gap-1.5"
+          >
+            <IconPlus size={16} />
             Add listing
           </button>
         </div>

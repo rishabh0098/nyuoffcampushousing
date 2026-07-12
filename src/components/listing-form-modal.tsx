@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import type { Listing, ListingPhoto } from "@prisma/client";
 import { ListingForm, type ListingFormInitialValues } from "@/components/listing-form";
+import { ModalCloseButton } from "@/components/icons";
 
 type EditableListing = Listing & { photos: ListingPhoto[] };
 
@@ -111,9 +112,7 @@ export function ListingFormModal({
           <h2 className="font-display text-lg text-ink">
             {mode === "create" ? "Add a listing" : "Edit listing"}
           </h2>
-          <button type="button" onClick={onClose} className="btn btn-ghost px-2 py-1.5" aria-label="Close">
-            Close
-          </button>
+          <ModalCloseButton onClick={onClose} />
         </div>
         <div className="overflow-auto p-4">
           {mode === "edit" && loadingEdit ? (

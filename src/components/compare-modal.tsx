@@ -13,6 +13,7 @@ import {
 import { useCompare } from "@/lib/compare-context";
 import { useDashboardNav } from "@/lib/dashboard-nav-context";
 import { ListingPhotoCarousel } from "@/components/listing-photo-carousel";
+import { IconX, ModalCloseButton } from "@/components/icons";
 
 type ComparableListing = Listing & { photos: ListingPhoto[] };
 
@@ -67,9 +68,7 @@ export function CompareModal({ onClose }: { onClose: () => void }) {
       >
         <div className="flex items-center justify-between border-b border-border p-4">
           <h2 className="font-display text-lg text-ink">Compare listings</h2>
-          <button onClick={onClose} className="btn btn-ghost px-2 py-1.5" aria-label="Close">
-            Close
-          </button>
+          <ModalCloseButton onClick={onClose} />
         </div>
 
         <div className="overflow-auto p-4">
@@ -127,11 +126,12 @@ function CompareTable({
                     {listing.title}
                   </button>
                   <button
+                    type="button"
                     onClick={() => onRemove(listing.id)}
-                    className="btn btn-ghost shrink-0 px-1.5 py-1 text-xs"
+                    className="btn btn-ghost h-7 w-7 shrink-0 p-0"
                     aria-label={`Remove ${listing.title} from comparison`}
                   >
-                    Remove
+                    <IconX size={14} />
                   </button>
                 </div>
               </div>

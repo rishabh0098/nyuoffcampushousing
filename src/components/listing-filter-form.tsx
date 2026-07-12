@@ -9,6 +9,7 @@ import {
   GENDER_PREFERENCE_OPTIONS,
   LEASE_TYPE_OPTIONS,
 } from "@/lib/constants";
+import { IconFilter } from "@/components/icons";
 
 // R7 — the filter dimensions for Available listings, laid out as a sidebar
 // since there are now too many to fit comfortably in a top bar.
@@ -214,7 +215,8 @@ export function ListingFilterForm({
         </label>
       </div>
 
-      <button type="submit" className="btn btn-primary">
+      <button type="submit" className="btn btn-primary inline-flex items-center justify-center gap-1.5">
+        <IconFilter size={15} />
         Apply filters
       </button>
     </form>

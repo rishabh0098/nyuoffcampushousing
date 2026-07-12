@@ -13,6 +13,7 @@ import {
   MAX_PHOTOS_PER_LISTING,
   MAX_PHOTO_SIZE_BYTES,
 } from "@/lib/constants";
+import { IconCheck, IconX } from "@/components/icons";
 
 const MAX_PHOTO_SIZE_MB = MAX_PHOTO_SIZE_BYTES / (1024 * 1024);
 
@@ -148,10 +149,10 @@ export function ListingForm({
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-4">
-      <Field label="Title">
+      <Field label="Title" required>
         <input name="title" required defaultValue={initialValues?.title} className="input" />
       </Field>
-      <Field label="Description">
+      <Field label="Description" required>
         <textarea
           name="description"
           required
@@ -160,7 +161,7 @@ export function ListingForm({
           className="input"
         />
       </Field>
-      <Field label="Rent (USD/month)">
+      <Field label="Rent (USD/month)" required>
         <input
           name="rent"
           type="number"
@@ -171,7 +172,7 @@ export function ListingForm({
           className="input"
         />
       </Field>
-      <Field label="Area">
+      <Field label="Area" required>
         <select
           name="area"
           required
@@ -188,7 +189,7 @@ export function ListingForm({
           ))}
         </select>
       </Field>
-      <Field label="Nearest campus">
+      <Field label="Nearest campus" required>
         <select name="campus" required defaultValue={initialValues?.campus} className="input">
           {CAMPUS_OPTIONS.map((o) => (
             <option key={o.value} value={o.value}>
@@ -197,7 +198,7 @@ export function ListingForm({
           ))}
         </select>
       </Field>
-      <Field label="Distance from that campus (miles)">
+      <Field label="Distance from that campus (miles)" required>
         <input
           name="distanceFromCampusMiles"
           type="number"
@@ -208,7 +209,7 @@ export function ListingForm({
           className="input"
         />
       </Field>
-      <Field label="Bedrooms">
+      <Field label="Bedrooms" required>
         <input
           name="bedrooms"
           type="number"
@@ -218,7 +219,7 @@ export function ListingForm({
           className="input"
         />
       </Field>
-      <Field label="Bathrooms">
+      <Field label="Bathrooms" required>
         <input
           name="bathrooms"
           type="number"
@@ -229,7 +230,7 @@ export function ListingForm({
           className="input"
         />
       </Field>
-      <Field label="Furnished">
+      <Field label="Furnished" required>
         <select
           name="furnishedStatus"
           required
@@ -243,21 +244,22 @@ export function ListingForm({
           ))}
         </select>
       </Field>
-      <Field label="Move-in date">
+      <Field label="Move-in date" required>
         <DateInput
           name="moveInDate"
+          required
           defaultValue={initialValues?.moveInDate}
           onIsoChange={setMoveInDate}
         />
       </Field>
-      <Field label="Lease end date (optional — leave blank if open-ended; must be on or after move-in)">
+      <Field label="Lease end date (leave blank if open-ended; must be on or after move-in)">
         <DateInput
           name="leaseEndDate"
           defaultValue={initialValues?.leaseEndDate}
           onIsoChange={setLeaseEndDate}
         />
       </Field>
-      <Field label="Lease type">
+      <Field label="Lease type" required>
         <select name="leaseType" required defaultValue={initialValues?.leaseType} className="input">
           {LEASE_TYPE_OPTIONS.map((o) => (
             <option key={o.value} value={o.value}>
@@ -293,7 +295,8 @@ export function ListingForm({
 
       <fieldset className="tile flex flex-col gap-3 p-4">
         <legend className="mb-1 px-1 text-sm font-medium text-ink">
-          Contact (at least one required)
+          Contact <span className="text-danger">*</span>
+          <span className="font-normal text-ink-soft"> (at least one)</span>
         </legend>
         <Field label="WhatsApp">
           <input
@@ -369,10 +372,20 @@ export function ListingForm({
       )}
 
       <div className="flex flex-wrap gap-2">
-        <button type="button" onClick={onCancel} className="btn btn-ghost">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="btn btn-ghost inline-flex items-center gap-1.5"
+        >
+          <IconX size={15} />
           Cancel
         </button>
-        <button type="submit" disabled={pending} className="btn btn-primary">
+        <button
+          type="submit"
+          disabled={pending}
+          className="btn btn-primary inline-flex items-center gap-1.5"
+        >
+          <IconCheck size={15} />
           {pending ? "Saving…" : mode === "create" ? "Submit listing" : "Save changes"}
         </button>
       </div>
@@ -380,10 +393,21 @@ export function ListingForm({
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  required,
+  children,
+}: {
+  label: string;
+  required?: boolean;
+  children: React.ReactNode;
+}) {
   return (
     <label className="flex flex-col gap-1 text-sm">
-      <span className="font-medium text-ink">{label}</span>
+      <span className="font-medium text-ink">
+        {label}
+        {required && <span className="text-danger"> *</span>}
+      </span>
       {children}
     </label>
   );
