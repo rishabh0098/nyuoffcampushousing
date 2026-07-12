@@ -76,7 +76,7 @@ export const LEASE_TYPE_OPTIONS = Object.entries(LEASE_TYPE_LABELS).map(([value,
 
 // R19 / R21 lifecycle thresholds.
 export const ACTIVE_LISTING_EXPIRY_DAYS = 15;
-export const INACTIVE_LISTING_DELETION_DAYS = 90; // ~3 months
+export const INACTIVE_LISTING_DELETION_DAYS = 60; // ~2 months
 
 // KTD2 — session cookie sliding-expiry window.
 export const SESSION_EXPIRY_DAYS = 5;

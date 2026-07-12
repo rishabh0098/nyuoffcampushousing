@@ -27,13 +27,13 @@ describe("shouldExpireToInactive (R19)", () => {
 });
 
 describe("shouldPermanentlyDelete (R21)", () => {
-  it("deletes a listing inactivated 3 months and 1 day ago", () => {
-    const inactivatedAt = new Date(now.getTime() - 91 * DAY_MS);
+  it("deletes a listing inactivated 2 months and 1 day ago", () => {
+    const inactivatedAt = new Date(now.getTime() - 61 * DAY_MS);
     expect(shouldPermanentlyDelete(inactivatedAt, now)).toBe(true);
   });
 
-  it("does not delete a listing inactivated within the 3-month window", () => {
-    const inactivatedAt = new Date(now.getTime() - 89 * DAY_MS);
+  it("does not delete a listing inactivated within the 2-month window", () => {
+    const inactivatedAt = new Date(now.getTime() - 59 * DAY_MS);
     expect(shouldPermanentlyDelete(inactivatedAt, now)).toBe(false);
   });
 

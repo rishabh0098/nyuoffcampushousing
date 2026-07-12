@@ -59,7 +59,7 @@ export default async function MyListingsPage() {
             Inactive
           </h2>
           <p className="mb-3 text-sm text-ink-soft">
-            Inactive listings are private to you and are permanently deleted after 3 months
+            Inactive listings are private to you and are permanently deleted after 2 months
             unless reactivated.
           </p>
           <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4">
