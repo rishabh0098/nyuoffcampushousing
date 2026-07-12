@@ -40,15 +40,17 @@ export default async function ListingDetailPage({
       </div>
 
       {listing.photos.length > 0 && (
-        <div className="grid grid-cols-3 gap-2">
-          {listing.photos.map((photo) => (
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+          {listing.photos.map((photo, index) => (
             <Image
               key={photo.id}
               src={photo.url}
               alt={listing.title}
-              width={200}
-              height={150}
-              className="aspect-[4/3] rounded-lg border border-border object-cover"
+              width={480}
+              height={360}
+              sizes="(min-width: 640px) 360px, 45vw"
+              className="aspect-[4/3] w-full rounded-lg border border-border object-cover"
+              priority={index === 0}
             />
           ))}
         </div>

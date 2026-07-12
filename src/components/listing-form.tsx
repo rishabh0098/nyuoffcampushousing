@@ -12,7 +12,10 @@ import {
   GENDER_PREFERENCE_OPTIONS,
   LEASE_TYPE_OPTIONS,
   MAX_PHOTOS_PER_LISTING,
+  MAX_PHOTO_SIZE_BYTES,
 } from "@/lib/constants";
+
+const MAX_PHOTO_SIZE_MB = MAX_PHOTO_SIZE_BYTES / (1024 * 1024);
 
 export type ListingFormInitialValues = {
   title: string;
@@ -79,6 +82,10 @@ export function ListingForm({
 
       const photoUrls: string[] = [];
       for (const file of photos.slice(0, remainingPhotoSlots)) {
+        if (file.size > MAX_PHOTO_SIZE_BYTES) {
+          setError(`Photos must be ${MAX_PHOTO_SIZE_MB}MB or smaller.`);
+          return;
+        }
         const uploadForm = new FormData();
         uploadForm.set("file", file);
         const res = await fetch("/api/listings/photos", { method: "POST", body: uploadForm });
@@ -350,6 +357,10 @@ export function ListingForm({
             onChange={(e) => setPhotos(Array.from(e.target.files ?? []))}
             className="input"
           />
+          <p className="mt-1 text-xs text-ink-soft">
+            JPG, PNG, or WEBP up to {MAX_PHOTO_SIZE_MB}MB each. Photos are resized
+            automatically when uploaded.
+          </p>
         </Field>
       ) : (
         <p className="text-xs text-ink-soft">

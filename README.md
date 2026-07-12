@@ -7,7 +7,8 @@ Inactive, with 15-day auto-expiry and reactivation), and read an alphabetical
 renting glossary. No bookings, payments, or in-app messaging — contact is
 direct (WhatsApp / email / phone on each listing).
 
-Licensed under [MIT](./LICENSE).
+Licensed under [MIT](./LICENSE). See [CONTRIBUTING.md](./CONTRIBUTING.md) if
+you want to help.
 
 ## Stack
 
