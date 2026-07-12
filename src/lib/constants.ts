@@ -100,3 +100,13 @@ export const NYU_GOOGLE_WORKSPACE_DOMAIN = "nyu.edu";
 // it gets wrapped in a client-reference boundary and can coerce to NaN,
 // which silently broke Array.prototype.slice() in the compare API route.
 export const MAX_COMPARE_LISTINGS = 3;
+
+/** Neon-facing server cache TTL for Active listing reads (seconds). */
+export const LISTINGS_SERVER_CACHE_SECONDS = 60;
+
+/**
+ * Client-side minimum gap between network fetches for the same data bucket
+ * (Available listings / My listings). Survives reload via sessionStorage so
+ * spam refresh/reload does not hammer APIs. Mutations bypass this.
+ */
+export const CLIENT_FETCH_MIN_INTERVAL_MS = 30_000;

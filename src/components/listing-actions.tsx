@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ConfirmModal } from "./confirm-modal";
+import { useDashboardShell } from "@/lib/dashboard-shell-context";
 
 export function EditListingButton({ listingId }: { listingId: string }) {
   return (
@@ -15,6 +16,7 @@ export function EditListingButton({ listingId }: { listingId: string }) {
 
 export function RemoveListingButton({ listingId }: { listingId: string }) {
   const router = useRouter();
+  const shell = useDashboardShell();
   const [confirming, setConfirming] = useState(false);
   const [pending, setPending] = useState(false);
 
@@ -22,7 +24,11 @@ export function RemoveListingButton({ listingId }: { listingId: string }) {
     setPending(true);
     try {
       await fetch(`/api/listings/${listingId}`, { method: "DELETE" });
-      router.refresh();
+      if (shell?.clientTabMode) {
+        await shell.afterMutation();
+      } else {
+        router.refresh();
+      }
     } finally {
       setPending(false);
       setConfirming(false);
@@ -52,13 +58,18 @@ export function RemoveListingButton({ listingId }: { listingId: string }) {
 
 export function ReactivateListingButton({ listingId }: { listingId: string }) {
   const router = useRouter();
+  const shell = useDashboardShell();
   const [pending, setPending] = useState(false);
 
   async function reactivate() {
     setPending(true);
     try {
       await fetch(`/api/listings/${listingId}/reactivate`, { method: "POST" });
-      router.refresh();
+      if (shell?.clientTabMode) {
+        await shell.afterMutation();
+      } else {
+        router.refresh();
+      }
     } finally {
       setPending(false);
     }

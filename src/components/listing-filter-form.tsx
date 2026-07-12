@@ -12,7 +12,12 @@ import {
 
 // R7 — the filter dimensions for Available listings, laid out as a sidebar
 // since there are now too many to fit comfortably in a top bar.
-export function ListingFilterForm() {
+export function ListingFilterForm({
+  onApplyFilters,
+}: {
+  /** When set, filters apply client-side (no App Router navigation). */
+  onApplyFilters?: (params: URLSearchParams) => void;
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -22,6 +27,10 @@ export function ListingFilterForm() {
     const params = new URLSearchParams();
     for (const [key, value] of form.entries()) {
       if (typeof value === "string" && value !== "") params.set(key, value);
+    }
+    if (onApplyFilters) {
+      onApplyFilters(params);
+      return;
     }
     router.push(`/listings?${params.toString()}`);
   }
