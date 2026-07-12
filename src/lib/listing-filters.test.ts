@@ -76,8 +76,8 @@ describe("buildListingWhereClause", () => {
   });
 
   it("applies an exact neighborhood filter", () => {
-    const where = buildListingWhereClause({ neighborhood: "EastVillage" });
-    expect(where.neighborhood).toBe("EastVillage");
+    const where = buildListingWhereClause({ neighborhood: "Manhattan" });
+    expect(where.neighborhood).toBe("Manhattan");
   });
 
   it("combines all provided filters with AND semantics (all must match)", () => {

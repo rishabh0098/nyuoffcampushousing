@@ -45,61 +45,15 @@ enum Campus {
   Other
 }
 
-// Preset list of popular NYC / Jersey City neighborhoods near NYU campuses
-// (KTD5) — same rationale as `Campus`: exact-match filtering, no geocoding.
+// NYC boroughs (+ Other). Coarser than street-level neighborhoods so the
+// filter/dropdown stays short; Jersey City / Hoboken listings map to Other
+// if they need a non-borough location.
 enum Neighborhood {
-  GreenwichVillage
-  EastVillage
-  WestVillage
-  Soho
-  Noho
-  Nolita
-  LittleItaly
-  Tribeca
-  FinancialDistrict
-  BatteryParkCity
-  UnionSquare
-  Gramercy
-  Flatiron
-  Chelsea
-  HellKitchen
-  MidtownEast
-  MidtownWest
-  LowerEastSide
-  Chinatown
-  MurrayHill
-  KipsBay
-  UpperEastSide
-  UpperWestSide
-  Harlem
-  BrooklynHeights
-  Dumbo
-  DowntownBrooklyn
-  BoerumHill
-  CobbleHill
-  CarrollGardens
-  ParkSlope
-  ProspectHeights
-  BedfordStuyvesant
-  CrownHeights
-  Bushwick
-  Williamsburg
-  Greenpoint
-  FortGreene
-  ClintonHill
-  Gowanus
-  RedHook
-  Astoria
-  LongIslandCity
-  Sunnyside
-  Ridgewood
-  JerseyCityDowntown
-  JerseyCityHeights
-  JournalSquare
-  Newport
-  GroveStreet
-  Hoboken
-  Weehawken
+  Manhattan
+  Brooklyn
+  Queens
+  TheBronx
+  StatenIsland
   Other
 }
 
