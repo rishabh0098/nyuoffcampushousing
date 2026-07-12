@@ -1,5 +1,6 @@
-import type {
-  Prisma,
+import { z } from "zod";
+import type { Prisma } from "@prisma/client";
+import {
   Area,
   Campus,
   FurnishedStatus,
@@ -28,6 +29,64 @@ export type ListingFilters = {
   vegPreferred?: boolean;
   genderPref?: GenderPreference;
 };
+
+const optionalQueryBoolean = z
+  .enum(["true", "false"])
+  .transform((value) => value === "true");
+
+/** Zod schema for R7 filter query params — enums validated like ListingInputSchema. */
+export const ListingFiltersQuerySchema = z.object({
+  minRentCents: z.coerce.number().int().nonnegative().optional(),
+  maxRentCents: z.coerce.number().int().nonnegative().optional(),
+  area: z.enum(Area).optional(),
+  campus: z.enum(Campus).optional(),
+  maxDistanceMiles: z.coerce.number().nonnegative().optional(),
+  minBedrooms: z.coerce.number().int().nonnegative().optional(),
+  minBathrooms: z.coerce.number().nonnegative().optional(),
+  furnishedStatus: z.enum(FurnishedStatus).optional(),
+  moveInBy: z.coerce.date().optional(),
+  leaseEndAfter: z.coerce.date().optional(),
+  leaseType: z.enum(LeaseType).optional(),
+  guarantorReq: optionalQueryBoolean.optional(),
+  utilitiesIncl: optionalQueryBoolean.optional(),
+  wifiIncl: optionalQueryBoolean.optional(),
+  acIncl: optionalQueryBoolean.optional(),
+  privateBathroom: optionalQueryBoolean.optional(),
+  laundryIncl: optionalQueryBoolean.optional(),
+  vegPreferred: optionalQueryBoolean.optional(),
+  genderPref: z.enum(GenderPreference).optional(),
+});
+
+const FILTER_QUERY_KEYS = [
+  "minRentCents",
+  "maxRentCents",
+  "area",
+  "campus",
+  "maxDistanceMiles",
+  "minBedrooms",
+  "minBathrooms",
+  "furnishedStatus",
+  "moveInBy",
+  "leaseEndAfter",
+  "leaseType",
+  "guarantorReq",
+  "utilitiesIncl",
+  "wifiIncl",
+  "acIncl",
+  "privateBathroom",
+  "laundryIncl",
+  "vegPreferred",
+  "genderPref",
+] as const satisfies readonly (keyof ListingFilters)[];
+
+export class ListingFiltersValidationError extends Error {
+  readonly issues: z.ZodError["issues"];
+
+  constructor(error: z.ZodError) {
+    super("Invalid listing filters.");
+    this.issues = error.issues;
+  }
+}
 
 /**
  * R7 — every provided filter is AND-ed together against Active listings
@@ -100,60 +159,22 @@ export function buildListingWhereClause(filters: ListingFilters): Prisma.Listing
   return where;
 }
 
-const BOOLEAN_KEYS = [
-  "guarantorReq",
-  "utilitiesIncl",
-  "wifiIncl",
-  "acIncl",
-  "privateBathroom",
-  "laundryIncl",
-  "vegPreferred",
-] as const satisfies readonly (keyof ListingFilters)[];
-
-/** Parses the R7 filter set out of a query-string, ignoring anything unrecognized. */
+/**
+ * Parses the R7 filter set out of a query-string, ignoring unrecognized keys.
+ * Invalid enum/number values throw ListingFiltersValidationError (map to 400).
+ */
 export function parseListingFilters(params: URLSearchParams): ListingFilters {
-  const filters: ListingFilters = {};
-
-  const minRentCents = params.get("minRentCents");
-  if (minRentCents) filters.minRentCents = Number(minRentCents);
-
-  const maxRentCents = params.get("maxRentCents");
-  if (maxRentCents) filters.maxRentCents = Number(maxRentCents);
-
-  const area = params.get("area");
-  if (area) filters.area = area as Area;
-
-  const campus = params.get("campus");
-  if (campus) filters.campus = campus as Campus;
-
-  const maxDistanceMiles = params.get("maxDistanceMiles");
-  if (maxDistanceMiles) filters.maxDistanceMiles = Number(maxDistanceMiles);
-
-  const minBedrooms = params.get("minBedrooms");
-  if (minBedrooms) filters.minBedrooms = Number(minBedrooms);
-
-  const minBathrooms = params.get("minBathrooms");
-  if (minBathrooms) filters.minBathrooms = Number(minBathrooms);
-
-  const furnishedStatus = params.get("furnishedStatus");
-  if (furnishedStatus) filters.furnishedStatus = furnishedStatus as FurnishedStatus;
-
-  const moveInBy = params.get("moveInBy");
-  if (moveInBy) filters.moveInBy = new Date(moveInBy);
-
-  const leaseEndAfter = params.get("leaseEndAfter");
-  if (leaseEndAfter) filters.leaseEndAfter = new Date(leaseEndAfter);
-
-  const leaseType = params.get("leaseType");
-  if (leaseType) filters.leaseType = leaseType as LeaseType;
-
-  const genderPref = params.get("genderPref");
-  if (genderPref) filters.genderPref = genderPref as GenderPreference;
-
-  for (const key of BOOLEAN_KEYS) {
+  const raw: Record<string, string> = {};
+  for (const key of FILTER_QUERY_KEYS) {
     const value = params.get(key);
-    if (value !== null) filters[key] = value === "true";
+    if (value !== null && value !== "") {
+      raw[key] = value;
+    }
   }
 
-  return filters;
+  const parsed = ListingFiltersQuerySchema.safeParse(raw);
+  if (!parsed.success) {
+    throw new ListingFiltersValidationError(parsed.error);
+  }
+  return parsed.data;
 }

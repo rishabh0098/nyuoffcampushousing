@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import type { Listing, ListingPhoto } from "@prisma/client";
+import type { Listing } from "@prisma/client";
 import { ListingCard } from "@/components/listing-card";
 import { ListingFilterForm } from "@/components/listing-filter-form";
 import { CompareToggle } from "@/components/compare-toggle";
@@ -37,7 +37,8 @@ type CardListing = Pick<
   | "bathrooms"
   | "furnishedStatus"
   | "vegPreferred"
-> & { photos: Pick<ListingPhoto, "id" | "url">[] };
+  | "mediaLink"
+>;
 
 type MinePayload = { active: CardListing[]; inactive: CardListing[] };
 

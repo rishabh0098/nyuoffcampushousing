@@ -19,10 +19,9 @@ function getGoogleJwks() {
 }
 
 /**
- * Builds Google's OAuth 2.0 authorization URL (KTD3). `hd` is sent only as a
- * UX hint to Google's account chooser — the actual domain restriction is
- * enforced server-side in assertNyuIdentity(), since `hd` on the redirect
- * itself is not verifiable/trustworthy.
+ * Builds Google's OAuth 2.0 authorization URL (KTD3). `hd` is sent as a UX
+ * hint to Google's account chooser; identity is still enforced server-side in
+ * assertNyuIdentity() via email domain + the ID token `hd` claim.
  */
 export function buildGoogleAuthUrl({ redirectUri, state }: { redirectUri: string; state: string }): string {
   const params = new URLSearchParams({
@@ -89,7 +88,7 @@ export async function verifyGoogleIdToken(idToken: string): Promise<GoogleIdToke
 
 export type NyuIdentityResult =
   | { ok: true; email: string }
-  | { ok: false; reason: "missing_email" | "email_not_verified" | "wrong_domain" };
+  | { ok: false; reason: "missing_email" | "email_not_verified" | "wrong_domain" | "wrong_hd" };
 
 /**
  * Pure decision function (R1, R2, R22): given verified Google ID token
@@ -107,6 +106,10 @@ export function assertNyuIdentity(claims: GoogleIdTokenClaims): NyuIdentityResul
   }
   if (!email.endsWith(`@${NYU_GOOGLE_WORKSPACE_DOMAIN}`)) {
     return { ok: false, reason: "wrong_domain" };
+  }
+  // Hosted-domain claim must match NYU Workspace (not only the email suffix).
+  if (claims.hd !== NYU_GOOGLE_WORKSPACE_DOMAIN) {
+    return { ok: false, reason: "wrong_hd" };
   }
   return { ok: true, email };
 }

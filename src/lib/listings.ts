@@ -8,7 +8,9 @@ import {
   LeaseType,
   type Listing,
 } from "@prisma/client";
-import { prisma } from "./db";
+import { encryptContactFields, decryptContactFields } from "./contact-crypto";
+import { isAllowedListingMediaUrl } from "./listing-media-url";
+import { withUserRls } from "./rls";
 
 export const ListingInputSchema = z
   .object({
@@ -35,7 +37,15 @@ export const ListingInputSchema = z
     contactWhatsapp: z.string().trim().max(40).optional().or(z.literal("")),
     contactEmail: z.email().optional().or(z.literal("")),
     contactPhone: z.string().trim().max(40).optional().or(z.literal("")),
-    photoUrls: z.array(z.url()).max(6).default([]),
+    mediaLink: z
+      .string()
+      .trim()
+      .optional()
+      .or(z.literal(""))
+      .refine((value) => !value || isAllowedListingMediaUrl(value), {
+        message:
+          "Media link must be HTTPS on an allowlisted host (Google Drive, Dropbox, Box, OneDrive, or iCloud).",
+      }),
   })
   // R12 — at least one contact method is required.
   .refine(
@@ -50,62 +60,111 @@ export const ListingInputSchema = z
 
 export type ListingInput = z.infer<typeof ListingInputSchema>;
 
-/** R13 — new listings are tied to the poster's verified email. */
-export async function createListing(posterEmail: string, input: ListingInput): Promise<Listing> {
-  const { photoUrls, ...fields } = input;
-  return prisma.listing.create({
-    data: {
-      ...fields,
-      posterEmail,
-      contactWhatsapp: fields.contactWhatsapp || null,
-      contactEmail: fields.contactEmail || null,
-      contactPhone: fields.contactPhone || null,
-      photos: { create: photoUrls.map((url) => ({ url })) },
-    },
-  });
+function normalizeMediaLink(mediaLink: string | undefined): string | null {
+  return mediaLink?.trim() ? mediaLink.trim() : null;
 }
 
-/**
- * Edits an Active listing's fields. Photos are additive-only here (existing
- * photos are kept, any newly uploaded ones are appended) — there's no
- * "remove a photo" flow yet, so this never deletes a `ListingPhoto` row.
- */
+/** R13 — new listings are tied to the poster's verified email. */
+export async function createListing(posterEmail: string, input: ListingInput): Promise<Listing> {
+  const contacts = encryptContactFields({
+    contactWhatsapp: input.contactWhatsapp || null,
+    contactEmail: input.contactEmail || null,
+    contactPhone: input.contactPhone || null,
+  });
+
+  const listing = await withUserRls(posterEmail, (tx) =>
+    tx.listing.create({
+      data: {
+        title: input.title,
+        description: input.description,
+        rentCents: input.rentCents,
+        area: input.area,
+        campus: input.campus,
+        distanceFromCampusMiles: input.distanceFromCampusMiles,
+        bedrooms: input.bedrooms,
+        bathrooms: input.bathrooms,
+        furnishedStatus: input.furnishedStatus,
+        moveInDate: input.moveInDate,
+        leaseEndDate: input.leaseEndDate,
+        leaseType: input.leaseType,
+        guarantorReq: input.guarantorReq,
+        utilitiesIncl: input.utilitiesIncl,
+        wifiIncl: input.wifiIncl,
+        acIncl: input.acIncl,
+        privateBathroom: input.privateBathroom,
+        laundryIncl: input.laundryIncl,
+        vegPreferred: input.vegPreferred,
+        genderPref: input.genderPref,
+        posterEmail,
+        mediaLink: normalizeMediaLink(input.mediaLink),
+        ...contacts,
+      },
+    })
+  );
+
+  return decryptContactFields(listing);
+}
+
+/** Edits an Active listing's fields. Ownership is enforced in the WHERE clause + RLS. */
 export async function updateListing(
   id: string,
   callerEmail: string,
   input: ListingInput
 ): Promise<Listing> {
-  const { photoUrls, ...fields } = input;
-  const result = await prisma.listing.updateMany({
-    where: { id, posterEmail: callerEmail, status: "Active" },
-    data: {
-      ...fields,
-      contactWhatsapp: fields.contactWhatsapp || null,
-      contactEmail: fields.contactEmail || null,
-      contactPhone: fields.contactPhone || null,
-    },
+  const contacts = encryptContactFields({
+    contactWhatsapp: input.contactWhatsapp || null,
+    contactEmail: input.contactEmail || null,
+    contactPhone: input.contactPhone || null,
   });
-  if (result.count === 0) {
-    throw new OwnershipError();
-  }
-  if (photoUrls.length > 0) {
-    await prisma.listingPhoto.createMany({
-      data: photoUrls.map((url) => ({ listingId: id, url })),
+
+  return withUserRls(callerEmail, async (tx) => {
+    const result = await tx.listing.updateMany({
+      where: { id, posterEmail: callerEmail, status: "Active" },
+      data: {
+        title: input.title,
+        description: input.description,
+        rentCents: input.rentCents,
+        area: input.area,
+        campus: input.campus,
+        distanceFromCampusMiles: input.distanceFromCampusMiles,
+        bedrooms: input.bedrooms,
+        bathrooms: input.bathrooms,
+        furnishedStatus: input.furnishedStatus,
+        moveInDate: input.moveInDate,
+        leaseEndDate: input.leaseEndDate ?? null,
+        leaseType: input.leaseType,
+        guarantorReq: input.guarantorReq,
+        utilitiesIncl: input.utilitiesIncl,
+        wifiIncl: input.wifiIncl,
+        acIncl: input.acIncl,
+        privateBathroom: input.privateBathroom,
+        laundryIncl: input.laundryIncl,
+        vegPreferred: input.vegPreferred,
+        genderPref: input.genderPref,
+        mediaLink: normalizeMediaLink(input.mediaLink),
+        ...contacts,
+      },
     });
-  }
-  return prisma.listing.findUniqueOrThrow({ where: { id } });
+    if (result.count === 0) {
+      throw new OwnershipError();
+    }
+    const listing = await tx.listing.findUniqueOrThrow({ where: { id } });
+    return decryptContactFields(listing);
+  });
 }
 
 /** R9 — the poster's own listings, split into Active and Inactive sections. */
 export async function getMyListings(posterEmail: string) {
-  const listings = await prisma.listing.findMany({
-    where: { posterEmail },
-    include: { photos: true },
-    orderBy: { updatedAt: "desc" },
-  });
+  const listings = await withUserRls(posterEmail, (tx) =>
+    tx.listing.findMany({
+      where: { posterEmail },
+      orderBy: { updatedAt: "desc" },
+    })
+  );
+  const decrypted = listings.map(decryptContactFields);
   return {
-    active: listings.filter((l) => l.status === "Active"),
-    inactive: listings.filter((l) => l.status === "Inactive"),
+    active: decrypted.filter((l) => l.status === "Active"),
+    inactive: decrypted.filter((l) => l.status === "Inactive"),
   };
 }
 
@@ -123,22 +182,26 @@ export class OwnershipError extends Error {
  * listing exists under someone else's email.
  */
 export async function removeListing(id: string, callerEmail: string): Promise<void> {
-  const result = await prisma.listing.updateMany({
-    where: { id, posterEmail: callerEmail, status: "Active" },
-    data: { status: "Inactive", inactivatedAt: new Date() },
+  await withUserRls(callerEmail, async (tx) => {
+    const result = await tx.listing.updateMany({
+      where: { id, posterEmail: callerEmail, status: "Active" },
+      data: { status: "Inactive", inactivatedAt: new Date() },
+    });
+    if (result.count === 0) {
+      throw new OwnershipError();
+    }
   });
-  if (result.count === 0) {
-    throw new OwnershipError();
-  }
 }
 
 /** R20, R23 — reactivate a listing, resetting its 15-day expiry clock. */
 export async function reactivateListing(id: string, callerEmail: string): Promise<void> {
-  const result = await prisma.listing.updateMany({
-    where: { id, posterEmail: callerEmail, status: "Inactive" },
-    data: { status: "Active", activatedAt: new Date(), inactivatedAt: null },
+  await withUserRls(callerEmail, async (tx) => {
+    const result = await tx.listing.updateMany({
+      where: { id, posterEmail: callerEmail, status: "Inactive" },
+      data: { status: "Active", activatedAt: new Date(), inactivatedAt: null },
+    });
+    if (result.count === 0) {
+      throw new OwnershipError();
+    }
   });
-  if (result.count === 0) {
-    throw new OwnershipError();
-  }
 }

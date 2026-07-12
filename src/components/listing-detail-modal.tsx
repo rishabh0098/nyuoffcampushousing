@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import Image from "next/image";
-import type { Listing, ListingPhoto } from "@prisma/client";
+import type { Listing } from "@prisma/client";
 import {
   AREA_LABELS,
   CAMPUS_LABELS,
@@ -11,9 +10,10 @@ import {
   GENDER_PREFERENCE_LABELS,
   LEASE_TYPE_LABELS,
 } from "@/lib/constants";
+import { ListingMediaEmbed } from "@/components/listing-media-embed";
 import { ModalCloseButton } from "@/components/icons";
 
-type DetailListing = Listing & { photos: ListingPhoto[] };
+type DetailListing = Listing;
 
 export function ListingDetailModal({
   listingId,
@@ -91,22 +91,7 @@ function DetailBody({ listing }: { listing: DetailListing }) {
         </p>
       </div>
 
-      {listing.photos.length > 0 && (
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-          {listing.photos.map((photo, index) => (
-            <Image
-              key={photo.id}
-              src={photo.url}
-              alt={listing.title}
-              width={480}
-              height={360}
-              sizes="(min-width: 640px) 360px, 45vw"
-              className="aspect-[4/3] w-full rounded-lg border border-border object-cover"
-              priority={index === 0}
-            />
-          ))}
-        </div>
-      )}
+      <ListingMediaEmbed mediaLink={listing.mediaLink} />
 
       <dl className="tile grid grid-cols-2 gap-x-6 gap-y-3 p-5 text-sm sm:grid-cols-3">
         <DetailItem label="Area" value={AREA_LABELS[listing.area]} />

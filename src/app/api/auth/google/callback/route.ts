@@ -35,7 +35,9 @@ export async function GET(request: NextRequest) {
 
     if (!identity.ok) {
       const redirectPath =
-        identity.reason === "wrong_domain" ? WRONG_DOMAIN_REDIRECT : SIGNIN_FAILED_REDIRECT;
+        identity.reason === "wrong_domain" || identity.reason === "wrong_hd"
+          ? WRONG_DOMAIN_REDIRECT
+          : SIGNIN_FAILED_REDIRECT;
       return NextResponse.redirect(new URL(redirectPath, origin));
     }
 
