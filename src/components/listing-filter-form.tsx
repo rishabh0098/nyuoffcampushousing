@@ -3,11 +3,11 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { DateInput } from "@/components/date-input";
 import {
+  AREA_OPTIONS,
   CAMPUS_OPTIONS,
   FURNISHED_STATUS_OPTIONS,
   GENDER_PREFERENCE_OPTIONS,
   LEASE_TYPE_OPTIONS,
-  NEIGHBORHOOD_OPTIONS,
 } from "@/lib/constants";
 
 // R7 — the filter dimensions for Available listings, laid out as a sidebar
@@ -48,11 +48,11 @@ export function ListingFilterForm() {
       <select
         name="neighborhood"
         defaultValue={searchParams.get("neighborhood") ?? ""}
-        aria-label="Neighborhood"
+        aria-label="Area"
         className="input"
       >
-        <option value="">Any neighborhood</option>
-        {NEIGHBORHOOD_OPTIONS.map((o) => (
+        <option value="">Any area</option>
+        {AREA_OPTIONS.map((o) => (
           <option key={o.value} value={o.value}>
             {o.label}
           </option>

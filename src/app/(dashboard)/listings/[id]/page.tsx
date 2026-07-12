@@ -3,11 +3,11 @@ import Image from "next/image";
 import { prisma } from "@/lib/db";
 import { verifySession } from "@/lib/session";
 import {
+  AREA_LABELS,
   CAMPUS_LABELS,
   FURNISHED_STATUS_LABELS,
   GENDER_PREFERENCE_LABELS,
   LEASE_TYPE_LABELS,
-  NEIGHBORHOOD_LABELS,
 } from "@/lib/constants";
 
 // R6, R18 — full listing detail, including the poster's contact methods.
@@ -55,7 +55,7 @@ export default async function ListingDetailPage({
       )}
 
       <dl className="tile grid grid-cols-2 gap-x-6 gap-y-3 p-5 text-sm sm:grid-cols-3">
-        <DetailItem label="Neighborhood" value={NEIGHBORHOOD_LABELS[listing.neighborhood]} />
+        <DetailItem label="Area" value={AREA_LABELS[listing.neighborhood]} />
         <DetailItem label="Campus" value={CAMPUS_LABELS[listing.campus]} />
         <DetailItem label="Distance from campus" value={`${listing.distanceFromCampusMiles} mi`} />
         <DetailItem label="Bedrooms" value={listing.bedrooms} />

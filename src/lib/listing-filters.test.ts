@@ -75,7 +75,7 @@ describe("buildListingWhereClause", () => {
     expect(where.furnishedStatus).toBe("Furnished");
   });
 
-  it("applies an exact neighborhood filter", () => {
+  it("applies an exact area filter", () => {
     const where = buildListingWhereClause({ neighborhood: "Manhattan" });
     expect(where.neighborhood).toBe("Manhattan");
   });

@@ -6,12 +6,12 @@ import Image from "next/image";
 import type { Campus, FurnishedStatus, GenderPreference, LeaseType, Neighborhood } from "@prisma/client";
 import { DateInput } from "@/components/date-input";
 import {
+  AREA_OPTIONS,
   CAMPUS_OPTIONS,
   FURNISHED_STATUS_OPTIONS,
   GENDER_PREFERENCE_OPTIONS,
   LEASE_TYPE_OPTIONS,
   MAX_PHOTOS_PER_LISTING,
-  NEIGHBORHOOD_OPTIONS,
 } from "@/lib/constants";
 
 export type ListingFormInitialValues = {
@@ -170,7 +170,7 @@ export function ListingForm({
           className="input"
         />
       </Field>
-      <Field label="Neighborhood / area">
+      <Field label="Area">
         <select
           name="neighborhood"
           required
@@ -178,9 +178,9 @@ export function ListingForm({
           className="input"
         >
           <option value="" disabled>
-            Select a neighborhood…
+            Select an area…
           </option>
-          {NEIGHBORHOOD_OPTIONS.map((o) => (
+          {AREA_OPTIONS.map((o) => (
             <option key={o.value} value={o.value}>
               {o.label}
             </option>

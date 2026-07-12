@@ -23,8 +23,8 @@ export const CAMPUS_OPTIONS = Object.entries(CAMPUS_LABELS).map(([value, label])
 }));
 
 // NYC boroughs + five key Jersey City areas (KTD5) — exact-match filtering
-// without geocoding. JC picks prioritize PATH-accessible student-heavy areas.
-export const NEIGHBORHOOD_LABELS: Record<Neighborhood, string> = {
+// without geocoding. UI label is "Area" (covers boroughs and JC sections).
+export const AREA_LABELS: Record<Neighborhood, string> = {
   Manhattan: "Manhattan",
   Brooklyn: "Brooklyn",
   Queens: "Queens",
@@ -38,9 +38,10 @@ export const NEIGHBORHOOD_LABELS: Record<Neighborhood, string> = {
   Other: "Other / not listed",
 };
 
-export const NEIGHBORHOOD_OPTIONS = Object.entries(NEIGHBORHOOD_LABELS).map(
-  ([value, label]) => ({ value: value as Neighborhood, label })
-);
+export const AREA_OPTIONS = Object.entries(AREA_LABELS).map(([value, label]) => ({
+  value: value as Neighborhood,
+  label,
+}));
 
 export const FURNISHED_STATUS_LABELS: Record<FurnishedStatus, string> = {
   Furnished: "Furnished",

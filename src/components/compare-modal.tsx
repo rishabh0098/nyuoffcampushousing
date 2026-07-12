@@ -4,11 +4,11 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import type { Listing, ListingPhoto } from "@prisma/client";
 import {
+  AREA_LABELS,
   CAMPUS_LABELS,
   FURNISHED_STATUS_LABELS,
   GENDER_PREFERENCE_LABELS,
   LEASE_TYPE_LABELS,
-  NEIGHBORHOOD_LABELS,
 } from "@/lib/constants";
 import { useCompare } from "@/lib/compare-context";
 import { ListingPhotoCarousel } from "@/components/listing-photo-carousel";
@@ -137,9 +137,9 @@ function CompareTable({
             </Cell>
           ))}
         </Row>
-        <Row label="Neighborhood">
+        <Row label="Area">
           {listings.map((l) => (
-            <Cell key={l.id}>{NEIGHBORHOOD_LABELS[l.neighborhood]}</Cell>
+            <Cell key={l.id}>{AREA_LABELS[l.neighborhood]}</Cell>
           ))}
         </Row>
         <Row label="Campus">
