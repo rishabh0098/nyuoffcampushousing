@@ -139,7 +139,7 @@ function CompareTable({
         </Row>
         <Row label="Area">
           {listings.map((l) => (
-            <Cell key={l.id}>{AREA_LABELS[l.neighborhood]}</Cell>
+            <Cell key={l.id}>{AREA_LABELS[l.area]}</Cell>
           ))}
         </Row>
         <Row label="Campus">

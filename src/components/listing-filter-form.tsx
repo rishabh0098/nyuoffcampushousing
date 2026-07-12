@@ -46,8 +46,8 @@ export function ListingFilterForm() {
       </div>
 
       <select
-        name="neighborhood"
-        defaultValue={searchParams.get("neighborhood") ?? ""}
+        name="area"
+        defaultValue={searchParams.get("area") ?? ""}
         aria-label="Area"
         className="input"
       >

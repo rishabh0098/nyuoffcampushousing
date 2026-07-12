@@ -55,7 +55,7 @@ export default async function ListingDetailPage({
       )}
 
       <dl className="tile grid grid-cols-2 gap-x-6 gap-y-3 p-5 text-sm sm:grid-cols-3">
-        <DetailItem label="Area" value={AREA_LABELS[listing.neighborhood]} />
+        <DetailItem label="Area" value={AREA_LABELS[listing.area]} />
         <DetailItem label="Campus" value={CAMPUS_LABELS[listing.campus]} />
         <DetailItem label="Distance from campus" value={`${listing.distanceFromCampusMiles} mi`} />
         <DetailItem label="Bedrooms" value={listing.bedrooms} />

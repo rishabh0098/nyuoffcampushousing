@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Image from "next/image";
-import type { Campus, FurnishedStatus, GenderPreference, LeaseType, Neighborhood } from "@prisma/client";
+import type { Area, Campus, FurnishedStatus, GenderPreference, LeaseType } from "@prisma/client";
 import { DateInput } from "@/components/date-input";
 import {
   AREA_OPTIONS,
@@ -18,7 +18,7 @@ export type ListingFormInitialValues = {
   title: string;
   description: string;
   rentCents: number;
-  neighborhood: Neighborhood;
+  area: Area;
   campus: Campus;
   distanceFromCampusMiles: number;
   bedrooms: number;
@@ -94,7 +94,7 @@ export function ListingForm({
         title: form.get("title"),
         description: form.get("description"),
         rentCents: Math.round(Number(form.get("rent")) * 100),
-        neighborhood: form.get("neighborhood"),
+        area: form.get("area"),
         campus: form.get("campus"),
         distanceFromCampusMiles: Number(form.get("distanceFromCampusMiles")),
         bedrooms: Number(form.get("bedrooms")),
@@ -172,9 +172,9 @@ export function ListingForm({
       </Field>
       <Field label="Area">
         <select
-          name="neighborhood"
+          name="area"
           required
-          defaultValue={initialValues?.neighborhood ?? ""}
+          defaultValue={initialValues?.area ?? ""}
           className="input"
         >
           <option value="" disabled>

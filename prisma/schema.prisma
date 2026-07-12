@@ -45,10 +45,9 @@ enum Campus {
   Other
 }
 
-// NYC boroughs + five key Jersey City areas (+ Other). UI calls this "Area".
-// Coarse on purpose so the filter/dropdown stays short (KTD5 — exact-match,
-// no geocoding).
-enum Neighborhood {
+// NYC boroughs + five key Jersey City areas (+ Other). Coarse on purpose so
+// the filter/dropdown stays short (KTD5 — exact-match, no geocoding).
+enum Area {
   Manhattan
   Brooklyn
   Queens
@@ -71,11 +70,11 @@ model Listing {
   title                   String
   description             String
   rentCents               Int
-  neighborhood            Neighborhood
+  area                    Area
   campus                  Campus
   // Self-reported distance from the selected campus (R7) — a plain number,
   // not geocoded (KTD5), so it's meaningful alongside `campus`, not instead
-  // of it: "campus" says which area, "distanceFromCampusMiles" says how far.
+  // of it: "campus" says which NYU campus, "distanceFromCampusMiles" says how far.
   distanceFromCampusMiles Float            @default(0)
   bedrooms                Int
   bathrooms               Float            @default(1)

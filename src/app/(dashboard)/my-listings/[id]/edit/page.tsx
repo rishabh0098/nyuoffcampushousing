@@ -33,7 +33,7 @@ export default async function EditListingPage({
     title: listing.title,
     description: listing.description,
     rentCents: listing.rentCents,
-    neighborhood: listing.neighborhood,
+    area: listing.area,
     campus: listing.campus,
     distanceFromCampusMiles: listing.distanceFromCampusMiles,
     bedrooms: listing.bedrooms,

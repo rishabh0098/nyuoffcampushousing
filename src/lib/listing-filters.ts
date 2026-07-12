@@ -1,16 +1,16 @@
 import type {
   Prisma,
+  Area,
   Campus,
   FurnishedStatus,
   GenderPreference,
   LeaseType,
-  Neighborhood,
 } from "@prisma/client";
 
 export type ListingFilters = {
   minRentCents?: number;
   maxRentCents?: number;
-  neighborhood?: Neighborhood;
+  area?: Area;
   campus?: Campus;
   maxDistanceMiles?: number;
   minBedrooms?: number;
@@ -43,8 +43,8 @@ export function buildListingWhereClause(filters: ListingFilters): Prisma.Listing
       ...(filters.maxRentCents !== undefined ? { lte: filters.maxRentCents } : {}),
     };
   }
-  if (filters.neighborhood) {
-    where.neighborhood = filters.neighborhood;
+  if (filters.area) {
+    where.area = filters.area;
   }
   if (filters.campus) {
     where.campus = filters.campus;
@@ -120,8 +120,8 @@ export function parseListingFilters(params: URLSearchParams): ListingFilters {
   const maxRentCents = params.get("maxRentCents");
   if (maxRentCents) filters.maxRentCents = Number(maxRentCents);
 
-  const neighborhood = params.get("neighborhood");
-  if (neighborhood) filters.neighborhood = neighborhood as Neighborhood;
+  const area = params.get("area");
+  if (area) filters.area = area as Area;
 
   const campus = params.get("campus");
   if (campus) filters.campus = campus as Campus;

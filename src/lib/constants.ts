@@ -1,12 +1,12 @@
 import {
+  Area,
   Campus,
   FurnishedStatus,
   GenderPreference,
   LeaseType,
-  Neighborhood,
 } from "@prisma/client";
 
-// KTD5 — preset campus/neighborhood enum, not geocoding.
+// KTD5 — preset campus enum, not geocoding.
 export const CAMPUS_LABELS: Record<Campus, string> = {
   WashingtonSquare: "Washington Square",
   Brooklyn: "Brooklyn",
@@ -23,8 +23,8 @@ export const CAMPUS_OPTIONS = Object.entries(CAMPUS_LABELS).map(([value, label])
 }));
 
 // NYC boroughs + five key Jersey City areas (KTD5) — exact-match filtering
-// without geocoding. UI label is "Area" (covers boroughs and JC sections).
-export const AREA_LABELS: Record<Neighborhood, string> = {
+// without geocoding.
+export const AREA_LABELS: Record<Area, string> = {
   Manhattan: "Manhattan",
   Brooklyn: "Brooklyn",
   Queens: "Queens",
@@ -39,7 +39,7 @@ export const AREA_LABELS: Record<Neighborhood, string> = {
 };
 
 export const AREA_OPTIONS = Object.entries(AREA_LABELS).map(([value, label]) => ({
-  value: value as Neighborhood,
+  value: value as Area,
   label,
 }));
 

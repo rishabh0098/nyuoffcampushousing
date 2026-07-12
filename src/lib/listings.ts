@@ -1,12 +1,12 @@
 import "server-only";
 import { z } from "zod";
 import {
+  Area,
   Campus,
   FurnishedStatus,
   GenderPreference,
   LeaseType,
   ListingStatus,
-  Neighborhood,
   type Listing,
 } from "@prisma/client";
 import { prisma } from "./db";
@@ -17,7 +17,7 @@ export const ListingInputSchema = z
     title: z.string().trim().min(1).max(120),
     description: z.string().trim().min(1).max(4000),
     rentCents: z.number().int().nonnegative(),
-    neighborhood: z.enum(Neighborhood),
+    area: z.enum(Area),
     campus: z.enum(Campus),
     distanceFromCampusMiles: z.number().nonnegative(),
     bedrooms: z.number().int().nonnegative(),
