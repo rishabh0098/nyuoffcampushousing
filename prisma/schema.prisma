@@ -33,7 +33,7 @@ enum FurnishedStatus {
   Unfurnished
 }
 
-// Preset NYU campuses / neighborhoods (KTD5) — exact-match filtering without a
+// Preset NYU campuses (KTD5) — exact-match filtering without a
 // geocoding/mapping vendor dependency. Extend this list post-launch as needed.
 enum Campus {
   WashingtonSquare
