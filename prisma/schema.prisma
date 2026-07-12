@@ -45,15 +45,19 @@ enum Campus {
   Other
 }
 
-// NYC boroughs (+ Other). Coarser than street-level neighborhoods so the
-// filter/dropdown stays short; Jersey City / Hoboken listings map to Other
-// if they need a non-borough location.
+// NYC boroughs + five key Jersey City areas (+ Other). Kept coarse so the
+// filter/dropdown stays short (KTD5 — exact-match, no geocoding).
 enum Neighborhood {
   Manhattan
   Brooklyn
   Queens
   TheBronx
   StatenIsland
+  DowntownJerseyCity
+  Newport
+  JournalSquare
+  JerseyCityHeights
+  GroveStreet
   Other
 }
 

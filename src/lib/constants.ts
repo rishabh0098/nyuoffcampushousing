@@ -22,13 +22,19 @@ export const CAMPUS_OPTIONS = Object.entries(CAMPUS_LABELS).map(([value, label])
   label,
 }));
 
-// NYC boroughs (KTD5) — exact-match filtering without geocoding.
+// NYC boroughs + five key Jersey City areas (KTD5) — exact-match filtering
+// without geocoding. JC picks prioritize PATH-accessible student-heavy areas.
 export const NEIGHBORHOOD_LABELS: Record<Neighborhood, string> = {
   Manhattan: "Manhattan",
   Brooklyn: "Brooklyn",
   Queens: "Queens",
   TheBronx: "The Bronx",
   StatenIsland: "Staten Island",
+  DowntownJerseyCity: "Jersey City — Downtown",
+  Newport: "Jersey City — Newport",
+  JournalSquare: "Jersey City — Journal Square",
+  JerseyCityHeights: "Jersey City — Heights",
+  GroveStreet: "Jersey City — Grove Street",
   Other: "Other / not listed",
 };
 
