@@ -93,35 +93,46 @@ function CompareTable({
   const closestId = bestByMin(listings, (l) => l.distanceFromCampusMiles);
 
   return (
-    <table className="w-full border-collapse text-sm">
+    // table-fixed + equal column widths keep every listing column the same
+    // size regardless of whether it has a photo or longer text values.
+    <table className="w-full table-fixed border-collapse text-sm">
+      <colgroup>
+        <col className="w-36" />
+        {listings.map((listing) => (
+          <col key={listing.id} />
+        ))}
+      </colgroup>
       <thead>
         <tr>
-          <th className="w-32" />
+          <th className="p-2" />
           {listings.map((listing) => (
             <th key={listing.id} className="p-2 text-left align-top">
               <div className="flex flex-col gap-2">
-                <div className="aspect-[4/3] w-full overflow-hidden rounded-lg bg-surface">
+                <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg bg-surface">
                   {listing.photos[0] ? (
                     <Image
                       src={listing.photos[0].url}
                       alt=""
-                      width={240}
-                      height={180}
-                      className="h-full w-full object-cover"
+                      fill
+                      sizes="(min-width: 768px) 30vw, 50vw"
+                      className="object-cover"
                     />
                   ) : (
-                    <div className="flex h-full items-center justify-center text-xs text-ink-soft">
+                    <div className="absolute inset-0 flex items-center justify-center text-xs text-ink-soft">
                       No photo
                     </div>
                   )}
                 </div>
-                <div className="flex items-start justify-between gap-2">
-                  <a href={`/listings/${listing.id}`} className="font-display text-ink hover:underline">
+                <div className="flex min-w-0 items-start justify-between gap-2">
+                  <a
+                    href={`/listings/${listing.id}`}
+                    className="font-display min-w-0 truncate text-ink hover:underline"
+                  >
                     {listing.title}
                   </a>
                   <button
                     onClick={() => onRemove(listing.id)}
-                    className="btn btn-ghost px-1.5 py-1 text-xs"
+                    className="btn btn-ghost shrink-0 px-1.5 py-1 text-xs"
                     aria-label={`Remove ${listing.title} from comparison`}
                   >
                     Remove
@@ -256,7 +267,11 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 
 function Cell({ children, highlight }: { children: React.ReactNode; highlight?: boolean }) {
   return (
-    <td className={`p-2 align-top ${highlight ? "rounded-md bg-accent-soft text-accent font-medium" : "text-ink"}`}>
+    <td
+      className={`overflow-hidden p-2 align-top break-words ${
+        highlight ? "rounded-md bg-accent-soft font-medium text-accent" : "text-ink"
+      }`}
+    >
       {children}
     </td>
   );
