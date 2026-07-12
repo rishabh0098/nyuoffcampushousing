@@ -7,7 +7,7 @@ import {
   updateListing,
 } from "@/lib/listings";
 import { invalidateListingsCaches } from "@/lib/cached-listings";
-import { toOwnerListing, toPublicListing } from "@/lib/listing-dto";
+import { toPublicListing } from "@/lib/listing-dto";
 import { forbidCrossOrigin } from "@/lib/same-origin";
 import { withUserRls } from "@/lib/rls";
 
@@ -32,7 +32,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   // Owners keep posterEmail for ownership UX; everyone else gets a public DTO.
   const isOwner = listing.posterEmail === session.email;
   return NextResponse.json({
-    listing: isOwner ? toOwnerListing(listing) : toPublicListing(listing),
+    listing: isOwner ? listing : toPublicListing(listing),
   });
 }
 

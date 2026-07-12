@@ -10,7 +10,7 @@ trustworthy, and free of commercial clutter.
 - UI polish that stays consistent with the existing design
 - Copy / glossary updates that help students renting off campus
 - Tests for logic that can regress quietly (filters, OAuth checks, lifecycle,
-  media URL validation, contact encryption)
+  media URL validation)
 - Docs that make setup or contribution clearer
 
 Please open an issue first for large features or scope changes (e.g. payments,
@@ -64,8 +64,8 @@ Do not commit secrets (`.env`, `.env.local`, tokens, connection strings).
 - **Media** — posters paste allowlisted HTTPS cloud links (Drive, etc.); no
   server-side image upload. Document NYU Drive sharing in form helper text.
 - **Secrets** — Production and Preview must use **distinct** `SESSION_SECRET`,
-  `CRON_SECRET`, `CONTACT_ENCRYPTION_KEY`, OAuth clients/redirects, and
-  databases. Never reuse those across environments.
+  `CRON_SECRET`, OAuth clients/redirects, and databases. Never reuse those
+  across environments.
 - **Tone** — community / volunteer, not commercial. Avoid marketing chrome,
   hard sells, or unrelated monetization.
 - **Scope (v1)** — no bookings, payments, or in-app messaging. Contact stays on
@@ -87,9 +87,7 @@ Prefer putting reusable logic in `src/lib/` and keeping route handlers thin.
 ## Database and Preview notes
 
 Production and Preview use **separate Neon databases**. Listings you create on
-Preview will not appear in Production (and vice versa). Encrypting contacts
-with different `CONTACT_ENCRYPTION_KEY` values per environment is intentional —
-do not copy encrypted rows between DBs without re-encrypting.
+Preview will not appear in Production (and vice versa).
 
 If you change the Prisma schema:
 
@@ -101,8 +99,8 @@ If you change the Prisma schema:
 
 - TypeScript should typecheck; avoid `any` unless unavoidable and justified
 - Match existing naming, layout patterns, and Tailwind usage
-- Add or update unit tests when you change filter, OAuth, lifecycle, media URL,
-  or contact-crypto logic
+- Add or update unit tests when you change filter, OAuth, lifecycle, or media URL
+  logic
 - Don’t expand product scope in a “drive-by” PR
 
 ## License

@@ -1,42 +1,17 @@
-import { decryptContactFields } from "./contact-crypto";
-
 /**
  * Public listing payloads omit `posterEmail` so browse/search/compare
- * responses don't leak the poster's Google account identity. Contact fields
- * are decrypted for authenticated API responses.
+ * responses don't leak the poster's Google account identity.
  */
-export function toPublicListing<
-  T extends {
-    posterEmail: string;
-    contactWhatsapp?: string | null;
-    contactEmail?: string | null;
-    contactPhone?: string | null;
-  },
->(listing: T): Omit<T, "posterEmail"> {
-  const decrypted = decryptContactFields(listing);
-  const { posterEmail, ...rest } = decrypted;
+export function toPublicListing<T extends { posterEmail: string }>(
+  listing: T
+): Omit<T, "posterEmail"> {
+  const { posterEmail, ...rest } = listing;
   void posterEmail;
   return rest;
 }
 
-export function toPublicListings<
-  T extends {
-    posterEmail: string;
-    contactWhatsapp?: string | null;
-    contactEmail?: string | null;
-    contactPhone?: string | null;
-  },
->(listings: T[]): Array<Omit<T, "posterEmail">> {
+export function toPublicListings<T extends { posterEmail: string }>(
+  listings: T[]
+): Array<Omit<T, "posterEmail">> {
   return listings.map(toPublicListing);
-}
-
-/** Decrypt contacts while keeping posterEmail (owner detail responses). */
-export function toOwnerListing<
-  T extends {
-    contactWhatsapp?: string | null;
-    contactEmail?: string | null;
-    contactPhone?: string | null;
-  },
->(listing: T): T {
-  return decryptContactFields(listing);
 }

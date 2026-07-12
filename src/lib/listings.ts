@@ -8,7 +8,6 @@ import {
   LeaseType,
   type Listing,
 } from "@prisma/client";
-import { encryptContactFields, decryptContactFields } from "./contact-crypto";
 import { isAllowedListingMediaUrl } from "./listing-media-url";
 import { withUserRls } from "./rls";
 
@@ -66,13 +65,7 @@ function normalizeMediaLink(mediaLink: string | undefined): string | null {
 
 /** R13 — new listings are tied to the poster's verified email. */
 export async function createListing(posterEmail: string, input: ListingInput): Promise<Listing> {
-  const contacts = encryptContactFields({
-    contactWhatsapp: input.contactWhatsapp || null,
-    contactEmail: input.contactEmail || null,
-    contactPhone: input.contactPhone || null,
-  });
-
-  const listing = await withUserRls(posterEmail, (tx) =>
+  return withUserRls(posterEmail, (tx) =>
     tx.listing.create({
       data: {
         title: input.title,
@@ -97,12 +90,12 @@ export async function createListing(posterEmail: string, input: ListingInput): P
         genderPref: input.genderPref,
         posterEmail,
         mediaLink: normalizeMediaLink(input.mediaLink),
-        ...contacts,
+        contactWhatsapp: input.contactWhatsapp || null,
+        contactEmail: input.contactEmail || null,
+        contactPhone: input.contactPhone || null,
       },
     })
   );
-
-  return decryptContactFields(listing);
 }
 
 /** Edits an Active listing's fields. Ownership is enforced in the WHERE clause + RLS. */
@@ -111,12 +104,6 @@ export async function updateListing(
   callerEmail: string,
   input: ListingInput
 ): Promise<Listing> {
-  const contacts = encryptContactFields({
-    contactWhatsapp: input.contactWhatsapp || null,
-    contactEmail: input.contactEmail || null,
-    contactPhone: input.contactPhone || null,
-  });
-
   return withUserRls(callerEmail, async (tx) => {
     const result = await tx.listing.updateMany({
       where: { id, posterEmail: callerEmail, status: "Active" },
@@ -142,14 +129,15 @@ export async function updateListing(
         vegPreferred: input.vegPreferred,
         genderPref: input.genderPref,
         mediaLink: normalizeMediaLink(input.mediaLink),
-        ...contacts,
+        contactWhatsapp: input.contactWhatsapp || null,
+        contactEmail: input.contactEmail || null,
+        contactPhone: input.contactPhone || null,
       },
     });
     if (result.count === 0) {
       throw new OwnershipError();
     }
-    const listing = await tx.listing.findUniqueOrThrow({ where: { id } });
-    return decryptContactFields(listing);
+    return tx.listing.findUniqueOrThrow({ where: { id } });
   });
 }
 
@@ -161,10 +149,9 @@ export async function getMyListings(posterEmail: string) {
       orderBy: { updatedAt: "desc" },
     })
   );
-  const decrypted = listings.map(decryptContactFields);
   return {
-    active: decrypted.filter((l) => l.status === "Active"),
-    inactive: decrypted.filter((l) => l.status === "Inactive"),
+    active: listings.filter((l) => l.status === "Active"),
+    inactive: listings.filter((l) => l.status === "Inactive"),
   };
 }
 

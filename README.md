@@ -53,7 +53,6 @@ you want to help.
      from [Google Cloud Console](https://console.cloud.google.com/apis/credentials),
      with `http://localhost:3000/api/auth/google/callback` (and your deployed
      callback URLs) as authorized redirect URIs
-   - `CONTACT_ENCRYPTION_KEY` — `openssl rand -base64 32` (AES-256 key for contact fields)
    - `CRON_SECRET` — `openssl rand -base64 32` (must match Vercel Cron config)
 
 3. Apply migrations:
@@ -82,7 +81,6 @@ For **Production** and again for **Preview** (separate values each time):
 | `DATABASE_URL` | Separate Neon database / branch per environment |
 | `SESSION_SECRET` | Distinct `openssl rand -base64 32` |
 | `CRON_SECRET` | Distinct `openssl rand -base64 32` |
-| `CONTACT_ENCRYPTION_KEY` | Distinct `openssl rand -base64 32` (32-byte AES key) |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Prefer separate OAuth clients; at minimum register distinct redirect URIs for prod vs preview hostnames |
 
 Also:
@@ -106,13 +104,6 @@ Optional hardening: create an `app_user` LOGIN role in SQL (not Console), grant
 DML on `"Listing"`, point the app `DATABASE_URL` at it, and keep an owner URL
 for migrations only.
 
-### Contact encryption
-
-`contactWhatsapp`, `contactEmail`, and `contactPhone` are stored with AES-256-GCM
-and decrypted only in authenticated API responses. Legacy plaintext rows still
-read until the listing is updated. `posterEmail` stays plaintext for ownership
-queries and RLS.
-
 ### Google Drive media
 
 Posters paste a Drive (or other allowlisted cloud) link. Prefer sharing with
@@ -129,7 +120,7 @@ npm run test:watch
 ```
 
 Unit tests cover Google domain/email verification, listing filters, lifecycle
-thresholds, media URL allowlisting/embed resolution, and contact encryption.
+thresholds, and media URL allowlisting/embed resolution.
 Full request/response integration testing needs a real Postgres database and a
 live Google OAuth round trip.
 

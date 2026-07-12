@@ -27,21 +27,6 @@ function assertStrongSessionSecret(secret: string): void {
   );
 }
 
-/** CONTACT_ENCRYPTION_KEY must be base64 for exactly 32 bytes (AES-256). */
-function assertContactEncryptionKey(value: string): void {
-  let decoded: Buffer;
-  try {
-    decoded = Buffer.from(value, "base64");
-  } catch {
-    throw new Error("CONTACT_ENCRYPTION_KEY must be valid base64.");
-  }
-  if (decoded.length !== 32) {
-    throw new Error(
-      "CONTACT_ENCRYPTION_KEY must be base64 for exactly 32 bytes. Generate with: openssl rand -base64 32"
-    );
-  }
-}
-
 /**
  * Lazily-read environment accessors. Reading lazily (rather than at module
  * load) keeps this importable in test/build contexts where not every var is
@@ -63,17 +48,6 @@ export const env = {
   },
   get googleClientSecret() {
     return required("GOOGLE_CLIENT_SECRET");
-  },
-  get contactEncryptionKey() {
-    const value = required("CONTACT_ENCRYPTION_KEY");
-    if ((process.env.NODE_ENV ?? "development") === "production") {
-      assertContactEncryptionKey(value);
-    } else {
-      // Still validate shape in non-production when the key is present so
-      // local misconfiguration fails early.
-      assertContactEncryptionKey(value);
-    }
-    return value;
   },
   get cronSecret() {
     return required("CRON_SECRET");
