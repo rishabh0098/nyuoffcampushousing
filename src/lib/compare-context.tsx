@@ -1,8 +1,8 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
+import { MAX_COMPARE_LISTINGS } from "@/lib/constants";
 
-export const MAX_COMPARE_LISTINGS = 3;
 const STORAGE_KEY = "compareListingIds";
 
 type CompareContextValue = {
@@ -36,6 +36,10 @@ function readStoredIds(): string[] {
  */
 export function CompareProvider({ children }: { children: React.ReactNode }) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  // Skip writing to sessionStorage until we've restored from it once —
+  // otherwise the initial `[]` state (and React Strict Mode remounts)
+  // would wipe whatever the user previously selected.
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     // Deliberate mount-detection read of sessionStorage — there's no
@@ -43,11 +47,13 @@ export function CompareProvider({ children }: { children: React.ReactNode }) {
     // on the client (sessionStorage isn't available during SSR).
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedIds(readStoredIds());
+    setHydrated(true);
   }, []);
 
   useEffect(() => {
+    if (!hydrated) return;
     window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(selectedIds));
-  }, [selectedIds]);
+  }, [selectedIds, hydrated]);
 
   const value: CompareContextValue = {
     selectedIds,

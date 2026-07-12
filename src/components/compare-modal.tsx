@@ -34,10 +34,16 @@ export function CompareModal({ onClose }: { onClose: () => void }) {
       return;
     }
     let cancelled = false;
-    fetch(`/api/listings/compare?ids=${selectedIds.join(",")}`)
-      .then((res) => res.json())
-      .then((data: { listings: ComparableListing[] }) => {
-        if (!cancelled) setListings(data.listings);
+    fetch(`/api/listings/compare?ids=${encodeURIComponent(selectedIds.join(","))}`)
+      .then(async (res) => {
+        if (!res.ok) throw new Error(`compare fetch failed: ${res.status}`);
+        return res.json() as Promise<{ listings: ComparableListing[] }>;
+      })
+      .then((data) => {
+        if (!cancelled) setListings(Array.isArray(data.listings) ? data.listings : []);
+      })
+      .catch(() => {
+        if (!cancelled) setListings([]);
       });
     return () => {
       cancelled = true;

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { verifySession } from "@/lib/session";
-import { MAX_COMPARE_LISTINGS } from "@/lib/compare-context";
+import { MAX_COMPARE_LISTINGS } from "@/lib/constants";
 
 /**
  * Backs the side-by-side comparison modal. Takes up to MAX_COMPARE_LISTINGS

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { MAX_COMPARE_LISTINGS, useCompare } from "@/lib/compare-context";
+import { useCompare } from "@/lib/compare-context";
+import { MAX_COMPARE_LISTINGS } from "@/lib/constants";
 
 /** "Compare" checkbox pill rendered on each Available-listings card. */
 export function CompareToggle({ listingId }: { listingId: string }) {

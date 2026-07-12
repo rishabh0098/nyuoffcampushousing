@@ -101,3 +101,11 @@ export const ALLOWED_PHOTO_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"
 
 // KTD3 — Google OAuth, restricted to NYU's Google Workspace domain.
 export const NYU_GOOGLE_WORKSPACE_DOMAIN = "nyu.edu";
+
+// Side-by-side comparison modal — max listings comparable at once. Lives
+// here (a plain shared module) rather than in the "use client" compare
+// context, since a Route Handler (server-only code) importing a constant
+// from a "use client" module doesn't reliably resolve to the real value —
+// it gets wrapped in a client-reference boundary and can coerce to NaN,
+// which silently broke Array.prototype.slice() in the compare API route.
+export const MAX_COMPARE_LISTINGS = 3;
