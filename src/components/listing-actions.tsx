@@ -2,10 +2,16 @@
 
 import { useState } from "react";
 import { ConfirmModal } from "./confirm-modal";
+import { IconPencil, IconRotateCcw, IconTrash } from "./icons";
 
 export function EditListingButton({ onEdit }: { onEdit: () => void }) {
   return (
-    <button type="button" onClick={onEdit} className="btn btn-secondary px-3 py-1.5 text-xs">
+    <button
+      type="button"
+      onClick={onEdit}
+      className="btn btn-secondary inline-flex items-center gap-1.5 px-3 py-1.5 text-xs"
+    >
+      <IconPencil size={13} />
       Edit
     </button>
   );
@@ -34,7 +40,12 @@ export function RemoveListingButton({
 
   return (
     <>
-      <button onClick={() => setConfirming(true)} className="btn btn-danger-outline px-3 py-1.5 text-xs">
+      <button
+        type="button"
+        onClick={() => setConfirming(true)}
+        className="btn btn-danger-outline inline-flex items-center gap-1.5 px-3 py-1.5 text-xs"
+      >
+        <IconTrash size={13} />
         Remove
       </button>
       {confirming && (
@@ -73,7 +84,13 @@ export function ReactivateListingButton({
   }
 
   return (
-    <button onClick={reactivate} disabled={pending} className="btn btn-success-outline px-3 py-1.5 text-xs">
+    <button
+      type="button"
+      onClick={reactivate}
+      disabled={pending}
+      className="btn btn-success-outline inline-flex items-center gap-1.5 px-3 py-1.5 text-xs"
+    >
+      <IconRotateCcw size={13} className={pending ? "animate-spin" : undefined} />
       {pending ? "Reactivating…" : "Reactivate"}
     </button>
   );

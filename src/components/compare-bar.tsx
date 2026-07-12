@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useCompare } from "@/lib/compare-context";
 import { CompareModal } from "@/components/compare-modal";
+import { IconColumns, IconX } from "@/components/icons";
 
 /** Floating bottom bar shown once at least one listing is selected for comparison. */
 export function CompareBar() {
@@ -18,10 +19,20 @@ export function CompareBar() {
           <span className="text-sm text-ink">
             {selectedIds.length} listing{selectedIds.length === 1 ? "" : "s"} selected
           </span>
-          <button onClick={() => setModalOpen(true)} className="btn btn-primary px-3 py-1.5 text-sm">
+          <button
+            type="button"
+            onClick={() => setModalOpen(true)}
+            className="btn btn-primary inline-flex items-center gap-1.5 px-3 py-1.5 text-sm"
+          >
+            <IconColumns size={15} />
             Compare
           </button>
-          <button onClick={clear} className="btn btn-ghost px-2 py-1.5 text-sm">
+          <button
+            type="button"
+            onClick={clear}
+            className="btn btn-ghost inline-flex items-center gap-1 px-2 py-1.5 text-sm"
+          >
+            <IconX size={14} />
             Clear
           </button>
         </div>

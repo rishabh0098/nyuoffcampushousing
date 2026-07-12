@@ -34,12 +34,14 @@ export function DateInput({
   defaultValue = "",
   className = "input",
   placeholder = "mm/dd/yyyy",
+  required = false,
   onIsoChange,
 }: {
   name: string;
   defaultValue?: string;
   className?: string;
   placeholder?: string;
+  required?: boolean;
   onIsoChange?: (iso: string) => void;
 }) {
   const [display, setDisplay] = useState(() => isoToDisplay(defaultValue));
@@ -52,6 +54,9 @@ export function DateInput({
         inputMode="numeric"
         placeholder={placeholder}
         value={display}
+        required={required}
+        pattern={required ? "\\d{1,2}/\\d{1,2}/\\d{4}" : undefined}
+        title={required ? "Enter a date as mm/dd/yyyy" : undefined}
         onChange={(e) => {
           const next = formatAsTyped(e.target.value);
           setDisplay(next);
