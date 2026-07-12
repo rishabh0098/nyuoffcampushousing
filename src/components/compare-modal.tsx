@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import Image from "next/image";
 import type { Listing, ListingPhoto } from "@prisma/client";
 import {
   CAMPUS_LABELS,
@@ -12,6 +11,7 @@ import {
   NEIGHBORHOOD_LABELS,
 } from "@/lib/constants";
 import { useCompare } from "@/lib/compare-context";
+import { ListingPhotoCarousel } from "@/components/listing-photo-carousel";
 
 type ComparableListing = Listing & { photos: ListingPhoto[] };
 
@@ -108,21 +108,7 @@ function CompareTable({
           {listings.map((listing) => (
             <th key={listing.id} className="p-2 text-left align-top">
               <div className="flex flex-col gap-2">
-                <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg bg-surface">
-                  {listing.photos[0] ? (
-                    <Image
-                      src={listing.photos[0].url}
-                      alt=""
-                      fill
-                      sizes="(min-width: 768px) 30vw, 50vw"
-                      className="object-cover"
-                    />
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center text-xs text-ink-soft">
-                      No photo
-                    </div>
-                  )}
-                </div>
+                <ListingPhotoCarousel photos={listing.photos} />
                 <div className="flex min-w-0 items-start justify-between gap-2">
                   <a
                     href={`/listings/${listing.id}`}

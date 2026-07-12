@@ -53,25 +53,53 @@ enum Neighborhood {
   WestVillage
   Soho
   Noho
+  Nolita
+  LittleItaly
+  Tribeca
+  FinancialDistrict
+  BatteryParkCity
   UnionSquare
   Gramercy
+  Flatiron
   Chelsea
+  HellKitchen
+  MidtownEast
+  MidtownWest
   LowerEastSide
   Chinatown
   MurrayHill
   KipsBay
   UpperEastSide
+  UpperWestSide
+  Harlem
   BrooklynHeights
   Dumbo
   DowntownBrooklyn
-  Williamsburg
+  BoerumHill
+  CobbleHill
+  CarrollGardens
+  ParkSlope
+  ProspectHeights
+  BedfordStuyvesant
+  CrownHeights
   Bushwick
+  Williamsburg
+  Greenpoint
   FortGreene
   ClintonHill
+  Gowanus
+  RedHook
+  Astoria
+  LongIslandCity
+  Sunnyside
+  Ridgewood
   JerseyCityDowntown
   JerseyCityHeights
   JournalSquare
+  Newport
+  GroveStreet
   Hoboken
+  Weehawken
   Other
 }
 
