@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { verifySession } from "@/lib/session";
 import { MAX_COMPARE_LISTINGS } from "@/lib/constants";
+import { toPublicListings } from "@/lib/listing-dto";
 
 /**
  * Backs the side-by-side comparison modal. Takes up to MAX_COMPARE_LISTINGS
@@ -24,7 +25,6 @@ export async function GET(request: Request) {
 
   const listings = await prisma.listing.findMany({
     where: { id: { in: ids }, status: "Active" },
-    include: { photos: true },
   });
 
   // Preserve the caller's selection order rather than whatever order the DB
@@ -33,5 +33,5 @@ export async function GET(request: Request) {
   const byId = new Map(listings.map((listing) => [listing.id, listing]));
   const ordered = ids.map((id) => byId.get(id)).filter((listing) => listing !== undefined);
 
-  return NextResponse.json({ listings: ordered });
+  return NextResponse.json({ listings: toPublicListings(ordered) });
 }

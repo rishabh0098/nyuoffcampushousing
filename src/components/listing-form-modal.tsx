@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import type { Listing, ListingPhoto } from "@prisma/client";
+import type { Listing } from "@prisma/client";
 import { ListingForm, type ListingFormInitialValues } from "@/components/listing-form";
 import { ModalCloseButton } from "@/components/icons";
 
-type EditableListing = Listing & { photos: ListingPhoto[] };
+type EditableListing = Listing;
 
 function toDateInputValue(date: string | Date | null | undefined): string | undefined {
   if (!date) return undefined;
@@ -39,7 +39,7 @@ function toInitialValues(listing: EditableListing): ListingFormInitialValues {
     contactWhatsapp: listing.contactWhatsapp ?? "",
     contactEmail: listing.contactEmail ?? "",
     contactPhone: listing.contactPhone ?? "",
-    existingPhotoUrls: listing.photos.map((p) => p.url),
+    mediaLink: listing.mediaLink ?? "",
   };
 }
 

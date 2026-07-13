@@ -1,6 +1,5 @@
-import type { Listing, ListingPhoto } from "@prisma/client";
+import type { Listing } from "@prisma/client";
 import { CAMPUS_LABELS, FURNISHED_STATUS_LABELS } from "@/lib/constants";
-import { ListingPhotoCarousel } from "./listing-photo-carousel";
 
 export function ListingCard({
   listing,
@@ -18,7 +17,8 @@ export function ListingCard({
     | "bathrooms"
     | "furnishedStatus"
     | "vegPreferred"
-  > & { photos: Pick<ListingPhoto, "id" | "url">[] };
+    | "mediaLink"
+  >;
   onOpen?: () => void;
   actions?: React.ReactNode;
 }) {
@@ -28,7 +28,11 @@ export function ListingCard({
     // than staying its own shorter content height and leaving the grid
     // cell's leftover space invisible below it.
     <div className="tile tile-interactive flex h-full flex-col gap-3 p-4">
-      <ListingPhotoCarousel photos={listing.photos} />
+      {listing.mediaLink ? (
+        <p className="text-xs font-medium text-accent">Photos &amp; video linked</p>
+      ) : (
+        <p className="text-xs text-ink-soft">No media link</p>
+      )}
       <h3 className="font-display text-lg text-ink">{listing.title}</h3>
       <p className="text-lg font-semibold text-accent">
         ${(listing.rentCents / 100).toFixed(0)}

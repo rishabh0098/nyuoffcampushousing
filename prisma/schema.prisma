@@ -92,12 +92,13 @@ model Listing {
   vegPreferred            Boolean          @default(false)
   genderPref              GenderPreference @default(NoPreference)
 
-  // R12 — at least one contact method required (enforced in application code)
+  // R12 — at least one contact method required (enforced in application code).
   contactWhatsapp String?
   contactEmail    String?
   contactPhone    String?
 
-  photos ListingPhoto[]
+  // Optional HTTPS link to cloud media (e.g. Google Drive folder/file).
+  mediaLink String?
 
   // R19–R21 lifecycle timestamps
   activatedAt   DateTime  @default(now())
@@ -110,14 +111,4 @@ model Listing {
   @@index([posterEmail])
   @@index([status, activatedAt])
   @@index([status, inactivatedAt])
-}
-
-model ListingPhoto {
-  id        String   @id @default(cuid())
-  listingId String
-  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
-  url       String
-  createdAt DateTime @default(now())
-
-  @@index([listingId])
 }

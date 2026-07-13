@@ -81,15 +81,6 @@ export const INACTIVE_LISTING_DELETION_DAYS = 60; // ~2 months
 // KTD2 — session cookie sliding-expiry window.
 export const SESSION_EXPIRY_DAYS = 5;
 
-// KTD6 — photo upload caps. Incoming files are also resized/compressed
-// server-side before Blob storage (see compressListingPhoto).
-export const MAX_PHOTOS_PER_LISTING = 6;
-export const MAX_PHOTO_SIZE_BYTES = 2 * 1024 * 1024; // 2MB pre-compress upload cap
-/** Longest edge after compress — enough for detail view, small for Blob. */
-export const PHOTO_MAX_EDGE_PX = 1600;
-export const PHOTO_WEBP_QUALITY = 80;
-export const ALLOWED_PHOTO_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"];
-
 // KTD3 — Google OAuth, restricted to NYU's Google Workspace domain.
 export const NYU_GOOGLE_WORKSPACE_DOMAIN = "nyu.edu";
 

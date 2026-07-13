@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { buildListingWhereClause, parseListingFilters } from "./listing-filters";
+import {
+  buildListingWhereClause,
+  ListingFiltersValidationError,
+  parseListingFilters,
+} from "./listing-filters";
 
 describe("buildListingWhereClause", () => {
   it("always scopes to Active listings (R8)", () => {
@@ -141,5 +145,25 @@ describe("parseListingFilters", () => {
 
   it("returns an empty object for no params", () => {
     expect(parseListingFilters(new URLSearchParams())).toEqual({});
+  });
+
+  it("parses boolean false values", () => {
+    const filters = parseListingFilters(
+      new URLSearchParams({ vegPreferred: "false", guarantorReq: "false" })
+    );
+    expect(filters.vegPreferred).toBe(false);
+    expect(filters.guarantorReq).toBe(false);
+  });
+
+  it("rejects invalid enum values", () => {
+    expect(() =>
+      parseListingFilters(new URLSearchParams({ campus: "NotACampus" }))
+    ).toThrow(ListingFiltersValidationError);
+  });
+
+  it("rejects non-numeric number filters", () => {
+    expect(() =>
+      parseListingFilters(new URLSearchParams({ minRentCents: "abc" }))
+    ).toThrow(ListingFiltersValidationError);
   });
 });

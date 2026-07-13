@@ -1,14 +1,24 @@
+import { timingSafeEqual } from "crypto";
 import { NextResponse } from "next/server";
 import { env } from "@/lib/env";
 import { runListingLifecycleJob } from "@/lib/listing-lifecycle";
 import { invalidateListingsCaches } from "@/lib/cached-listings";
+
+function isAuthorizedCronRequest(authHeader: string | null, cronSecret: string): boolean {
+  if (!authHeader?.startsWith("Bearer ")) return false;
+  const provided = authHeader.slice("Bearer ".length);
+  const expected = Buffer.from(cronSecret, "utf8");
+  const actual = Buffer.from(provided, "utf8");
+  if (expected.length !== actual.length) return false;
+  return timingSafeEqual(expected, actual);
+}
 
 // KTD4, U5 — daily Vercel Cron job (see vercel.json). Authenticated via a
 // shared secret rather than the user session, since it's called by Vercel's
 // scheduler, not a browser.
 export async function GET(request: Request) {
   const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${env.cronSecret}`) {
+  if (!isAuthorizedCronRequest(authHeader, env.cronSecret)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
