@@ -39,7 +39,6 @@ enum Campus {
   WashingtonSquare
   Brooklyn
   Tandon
-  Stern
   UnionSquare
   UpperEastSide
   Other

@@ -11,7 +11,6 @@ export const CAMPUS_LABELS: Record<Campus, string> = {
   WashingtonSquare: "Washington Square",
   Brooklyn: "Brooklyn",
   Tandon: "Tandon (Brooklyn Engineering)",
-  Stern: "Stern School of Business",
   UnionSquare: "Union Square",
   UpperEastSide: "Upper East Side (NYU Langone)",
   Other: "Other / not listed",
