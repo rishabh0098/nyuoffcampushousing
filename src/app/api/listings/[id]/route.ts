@@ -22,6 +22,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
         id,
         OR: [{ status: "Active" }, { posterEmail: session.email }],
       },
+      include: { photos: true },
     })
   );
 

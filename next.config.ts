@@ -3,8 +3,8 @@ import type { NextConfig } from "next";
 const isDev = process.env.NODE_ENV !== "production";
 
 /**
- * Static CSP — works with Next.js, the inline theme-init script, Google OAuth
- * redirects (top-level navigations), and Google Drive media embeds.
+ * Static CSP — works with Next.js, the inline theme-init script, and Google OAuth
+ * redirects (top-level navigations).
  * 'unsafe-inline' is required for the beforeInteractive theme script without
  * a per-request nonce; 'unsafe-eval' only in development for Next/React tooling.
  */
@@ -15,7 +15,6 @@ const contentSecurityPolicy = [
   "img-src 'self' blob: data: https:",
   "font-src 'self'",
   "connect-src 'self'",
-  "frame-src https://drive.google.com https://docs.google.com",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
@@ -46,6 +45,10 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  images: {
+    // KTD6 — listing photos are served from Vercel Blob's public storage.
+    remotePatterns: [{ protocol: "https", hostname: "*.public.blob.vercel-storage.com" }],
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

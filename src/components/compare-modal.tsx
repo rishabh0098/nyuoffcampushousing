@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import type { Listing } from "@prisma/client";
+import type { Listing, ListingPhoto } from "@prisma/client";
 import {
   AREA_LABELS,
   CAMPUS_LABELS,
@@ -12,10 +12,10 @@ import {
 } from "@/lib/constants";
 import { useCompare } from "@/lib/compare-context";
 import { useDashboardNav } from "@/lib/dashboard-nav-context";
-import { ListingMediaEmbed } from "@/components/listing-media-embed";
+import { ListingPhotoCarousel } from "@/components/listing-photo-carousel";
 import { IconX, ModalCloseButton } from "@/components/icons";
 
-type ComparableListing = Listing;
+type ComparableListing = Listing & { photos: ListingPhoto[] };
 
 export function CompareModal({ onClose }: { onClose: () => void }) {
   const { openListing } = useDashboardNav();
@@ -116,7 +116,7 @@ function CompareTable({
           {listings.map((listing) => (
             <th key={listing.id} className="p-2 text-left align-top">
               <div className="flex flex-col gap-2">
-                <ListingMediaEmbed mediaLink={listing.mediaLink} compact />
+                <ListingPhotoCarousel photos={listing.photos} />
                 <div className="flex min-w-0 items-start justify-between gap-2">
                   <button
                     type="button"

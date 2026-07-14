@@ -8,7 +8,6 @@ import {
   LeaseType,
   type Listing,
 } from "@prisma/client";
-import { isAllowedListingMediaUrl } from "./listing-media-url";
 import { withUserRls } from "./rls";
 
 export const ListingInputSchema = z
@@ -36,15 +35,7 @@ export const ListingInputSchema = z
     contactWhatsapp: z.string().trim().max(40).optional().or(z.literal("")),
     contactEmail: z.email().optional().or(z.literal("")),
     contactPhone: z.string().trim().max(40).optional().or(z.literal("")),
-    mediaLink: z
-      .string()
-      .trim()
-      .optional()
-      .or(z.literal(""))
-      .refine((value) => !value || isAllowedListingMediaUrl(value), {
-        message:
-          "Media link must be HTTPS on an allowlisted host (Google Drive, Dropbox, Box, OneDrive, or iCloud).",
-      }),
+    photoUrls: z.array(z.url()).max(6).default([]),
   })
   // R12 — at least one contact method is required.
   .refine(
@@ -59,83 +50,91 @@ export const ListingInputSchema = z
 
 export type ListingInput = z.infer<typeof ListingInputSchema>;
 
-function normalizeMediaLink(mediaLink: string | undefined): string | null {
-  return mediaLink?.trim() ? mediaLink.trim() : null;
-}
-
 /** R13 — new listings are tied to the poster's verified email. */
 export async function createListing(posterEmail: string, input: ListingInput): Promise<Listing> {
+  const { photoUrls, ...fields } = input;
+
   return withUserRls(posterEmail, (tx) =>
     tx.listing.create({
       data: {
-        title: input.title,
-        description: input.description,
-        rentCents: input.rentCents,
-        area: input.area,
-        campus: input.campus,
-        distanceFromCampusMiles: input.distanceFromCampusMiles,
-        bedrooms: input.bedrooms,
-        bathrooms: input.bathrooms,
-        furnishedStatus: input.furnishedStatus,
-        moveInDate: input.moveInDate,
-        leaseEndDate: input.leaseEndDate,
-        leaseType: input.leaseType,
-        guarantorReq: input.guarantorReq,
-        utilitiesIncl: input.utilitiesIncl,
-        wifiIncl: input.wifiIncl,
-        acIncl: input.acIncl,
-        privateBathroom: input.privateBathroom,
-        laundryIncl: input.laundryIncl,
-        vegPreferred: input.vegPreferred,
-        genderPref: input.genderPref,
+        title: fields.title,
+        description: fields.description,
+        rentCents: fields.rentCents,
+        area: fields.area,
+        campus: fields.campus,
+        distanceFromCampusMiles: fields.distanceFromCampusMiles,
+        bedrooms: fields.bedrooms,
+        bathrooms: fields.bathrooms,
+        furnishedStatus: fields.furnishedStatus,
+        moveInDate: fields.moveInDate,
+        leaseEndDate: fields.leaseEndDate,
+        leaseType: fields.leaseType,
+        guarantorReq: fields.guarantorReq,
+        utilitiesIncl: fields.utilitiesIncl,
+        wifiIncl: fields.wifiIncl,
+        acIncl: fields.acIncl,
+        privateBathroom: fields.privateBathroom,
+        laundryIncl: fields.laundryIncl,
+        vegPreferred: fields.vegPreferred,
+        genderPref: fields.genderPref,
         posterEmail,
-        mediaLink: normalizeMediaLink(input.mediaLink),
-        contactWhatsapp: input.contactWhatsapp || null,
-        contactEmail: input.contactEmail || null,
-        contactPhone: input.contactPhone || null,
+        contactWhatsapp: fields.contactWhatsapp || null,
+        contactEmail: fields.contactEmail || null,
+        contactPhone: fields.contactPhone || null,
+        photos: { create: photoUrls.map((url) => ({ url })) },
       },
     })
   );
 }
 
-/** Edits an Active listing's fields. Ownership is enforced in the WHERE clause + RLS. */
+/**
+ * Edits an Active listing's fields. Photos are additive-only here (existing
+ * photos are kept, any newly uploaded ones are appended) — there's no
+ * "remove a photo" flow yet, so this never deletes a `ListingPhoto` row.
+ */
 export async function updateListing(
   id: string,
   callerEmail: string,
   input: ListingInput
 ): Promise<Listing> {
+  const { photoUrls, ...fields } = input;
+
   return withUserRls(callerEmail, async (tx) => {
     const result = await tx.listing.updateMany({
       where: { id, posterEmail: callerEmail, status: "Active" },
       data: {
-        title: input.title,
-        description: input.description,
-        rentCents: input.rentCents,
-        area: input.area,
-        campus: input.campus,
-        distanceFromCampusMiles: input.distanceFromCampusMiles,
-        bedrooms: input.bedrooms,
-        bathrooms: input.bathrooms,
-        furnishedStatus: input.furnishedStatus,
-        moveInDate: input.moveInDate,
-        leaseEndDate: input.leaseEndDate ?? null,
-        leaseType: input.leaseType,
-        guarantorReq: input.guarantorReq,
-        utilitiesIncl: input.utilitiesIncl,
-        wifiIncl: input.wifiIncl,
-        acIncl: input.acIncl,
-        privateBathroom: input.privateBathroom,
-        laundryIncl: input.laundryIncl,
-        vegPreferred: input.vegPreferred,
-        genderPref: input.genderPref,
-        mediaLink: normalizeMediaLink(input.mediaLink),
-        contactWhatsapp: input.contactWhatsapp || null,
-        contactEmail: input.contactEmail || null,
-        contactPhone: input.contactPhone || null,
+        title: fields.title,
+        description: fields.description,
+        rentCents: fields.rentCents,
+        area: fields.area,
+        campus: fields.campus,
+        distanceFromCampusMiles: fields.distanceFromCampusMiles,
+        bedrooms: fields.bedrooms,
+        bathrooms: fields.bathrooms,
+        furnishedStatus: fields.furnishedStatus,
+        moveInDate: fields.moveInDate,
+        leaseEndDate: fields.leaseEndDate ?? null,
+        leaseType: fields.leaseType,
+        guarantorReq: fields.guarantorReq,
+        utilitiesIncl: fields.utilitiesIncl,
+        wifiIncl: fields.wifiIncl,
+        acIncl: fields.acIncl,
+        privateBathroom: fields.privateBathroom,
+        laundryIncl: fields.laundryIncl,
+        vegPreferred: fields.vegPreferred,
+        genderPref: fields.genderPref,
+        contactWhatsapp: fields.contactWhatsapp || null,
+        contactEmail: fields.contactEmail || null,
+        contactPhone: fields.contactPhone || null,
       },
     });
     if (result.count === 0) {
       throw new OwnershipError();
+    }
+    if (photoUrls.length > 0) {
+      await tx.listingPhoto.createMany({
+        data: photoUrls.map((url) => ({ listingId: id, url })),
+      });
     }
     return tx.listing.findUniqueOrThrow({ where: { id } });
   });
@@ -146,6 +145,7 @@ export async function getMyListings(posterEmail: string) {
   const listings = await withUserRls(posterEmail, (tx) =>
     tx.listing.findMany({
       where: { posterEmail },
+      include: { photos: true },
       orderBy: { updatedAt: "desc" },
     })
   );

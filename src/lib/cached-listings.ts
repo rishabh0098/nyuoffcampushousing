@@ -42,6 +42,7 @@ export function getCachedActiveListings(filters: ListingFilters) {
     async () =>
       prisma.listing.findMany({
         where: buildListingWhereClause(filters),
+        include: { photos: true },
         orderBy: { createdAt: "desc" },
       }),
     ["active-listings", key],

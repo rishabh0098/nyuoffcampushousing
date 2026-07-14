@@ -10,7 +10,7 @@ trustworthy, and free of commercial clutter.
 - UI polish that stays consistent with the existing design
 - Copy / glossary updates that help students renting off campus
 - Tests for logic that can regress quietly (filters, OAuth checks, lifecycle,
-  media URL validation)
+  photo compression)
 - Docs that make setup or contribution clearer
 
 Please open an issue first for large features or scope changes (e.g. payments,

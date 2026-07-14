@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import type { Area, Campus, FurnishedStatus, GenderPreference, LeaseType } from "@prisma/client";
 import { DateInput } from "@/components/date-input";
 import {
@@ -9,8 +10,12 @@ import {
   FURNISHED_STATUS_OPTIONS,
   GENDER_PREFERENCE_OPTIONS,
   LEASE_TYPE_OPTIONS,
+  MAX_PHOTOS_PER_LISTING,
+  MAX_PHOTO_SIZE_BYTES,
 } from "@/lib/constants";
 import { IconCheck, IconX } from "@/components/icons";
+
+const MAX_PHOTO_SIZE_MB = MAX_PHOTO_SIZE_BYTES / (1024 * 1024);
 
 export type ListingFormInitialValues = {
   title: string;
@@ -36,11 +41,11 @@ export type ListingFormInitialValues = {
   contactWhatsapp: string;
   contactEmail: string;
   contactPhone: string;
-  mediaLink: string;
+  existingPhotoUrls: string[];
 };
 
 // R10–R13 — shared by "add a listing" and "edit a listing": structured
-// fields, optional cloud media link, at least one contact method (enforced by
+// fields, optional photos, at least one contact method (enforced by
 // ListingInputSchema server-side).
 export function ListingForm({
   mode,
@@ -57,8 +62,12 @@ export function ListingForm({
 }) {
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [photos, setPhotos] = useState<File[]>([]);
   const [moveInDate, setMoveInDate] = useState(initialValues?.moveInDate ?? "");
   const [leaseEndDate, setLeaseEndDate] = useState(initialValues?.leaseEndDate ?? "");
+
+  const existingPhotoCount = initialValues?.existingPhotoUrls.length ?? 0;
+  const remainingPhotoSlots = Math.max(0, MAX_PHOTOS_PER_LISTING - existingPhotoCount);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -73,6 +82,23 @@ export function ListingForm({
 
     try {
       const form = new FormData(e.currentTarget);
+
+      const photoUrls: string[] = [];
+      for (const file of photos.slice(0, remainingPhotoSlots)) {
+        if (file.size > MAX_PHOTO_SIZE_BYTES) {
+          setError(`Photos must be ${MAX_PHOTO_SIZE_MB}MB or smaller.`);
+          return;
+        }
+        const uploadForm = new FormData();
+        uploadForm.set("file", file);
+        const res = await fetch("/api/listings/photos", { method: "POST", body: uploadForm });
+        const data = await res.json();
+        if (!res.ok) {
+          setError(data.error ?? "Photo upload failed.");
+          return;
+        }
+        photoUrls.push(data.url);
+      }
 
       const payload = {
         title: form.get("title"),
@@ -98,7 +124,7 @@ export function ListingForm({
         contactWhatsapp: form.get("contactWhatsapp") || "",
         contactEmail: form.get("contactEmail") || "",
         contactPhone: form.get("contactPhone") || "",
-        mediaLink: form.get("mediaLink") || "",
+        photoUrls,
       };
 
       const res = await fetch(
@@ -296,22 +322,48 @@ export function ListingForm({
         </Field>
       </fieldset>
 
-      <Field label="Photos & video link (optional)">
-        <input
-          name="mediaLink"
-          type="url"
-          inputMode="url"
-          placeholder="https://drive.google.com/drive/folders/…"
-          defaultValue={initialValues?.mediaLink}
-          className="input"
-        />
-        <p className="mt-1 text-xs text-ink-soft">
-          Paste a Google Drive (or other cloud) link to a folder or file with images/videos.
-          Share with NYU / anyone at nyu.edu with the link; viewers must be signed into their
-          NYU Google account. This app cannot bypass Drive access controls — if a preview looks
-          blank, open the link in Google Drive while signed in with NYU.
+      {existingPhotoCount > 0 && initialValues && (
+        <Field label="Current photos">
+          <div className="grid grid-cols-3 gap-2">
+            {initialValues.existingPhotoUrls.map((url) => (
+              <Image
+                key={url}
+                src={url}
+                alt=""
+                width={120}
+                height={90}
+                className="aspect-[4/3] rounded-lg border border-border object-cover"
+              />
+            ))}
+          </div>
+        </Field>
+      )}
+
+      {remainingPhotoSlots > 0 ? (
+        <Field
+          label={
+            mode === "create"
+              ? `Photos (optional, up to ${MAX_PHOTOS_PER_LISTING})`
+              : `Add more photos (optional, up to ${remainingPhotoSlots} more)`
+          }
+        >
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            multiple
+            onChange={(e) => setPhotos(Array.from(e.target.files ?? []))}
+            className="input"
+          />
+          <p className="mt-1 text-xs text-ink-soft">
+            JPG, PNG, or WEBP up to {MAX_PHOTO_SIZE_MB}MB each. Photos are resized
+            automatically when uploaded.
+          </p>
+        </Field>
+      ) : (
+        <p className="text-xs text-ink-soft">
+          You&apos;ve reached the {MAX_PHOTOS_PER_LISTING}-photo limit for this listing.
         </p>
-      </Field>
+      )}
 
       {error && (
         <p className="rounded-lg border border-danger/30 bg-danger-soft px-4 py-2.5 text-sm text-danger">

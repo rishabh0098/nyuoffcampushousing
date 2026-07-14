@@ -49,6 +49,9 @@ export const env = {
   get googleClientSecret() {
     return required("GOOGLE_CLIENT_SECRET");
   },
+  get blobReadWriteToken() {
+    return required("BLOB_READ_WRITE_TOKEN");
+  },
   get cronSecret() {
     return required("CRON_SECRET");
   },

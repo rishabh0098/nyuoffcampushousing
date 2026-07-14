@@ -15,7 +15,7 @@ you want to help.
 - [Next.js 16](https://nextjs.org) (App Router, TypeScript, Tailwind CSS)
 - [Prisma](https://www.prisma.io) + [Neon](https://neon.tech) Postgres (via Vercel Marketplace)
 - Google OAuth 2.0 (Authorization Code flow, `nyu.edu` domain only)
-- Cloud media links (Google Drive and other allowlisted hosts) instead of uploads
+- [Vercel Blob](https://vercel.com/docs/storage/vercel-blob) for listing photo uploads (compressed server-side)
 - [Vercel Cron](https://vercel.com/docs/cron-jobs) for the listing lifecycle job
 
 > **Note:** Next.js 16 renamed Middleware to
@@ -25,7 +25,7 @@ you want to help.
 ## Features
 
 - **Available listings** — filter by area (NYC boroughs + key Jersey City areas),
-  campus, rent, bedrooms, lease type, amenities, and more; optional Drive/media link
+  campus, rent, bedrooms, lease type, amenities, and more; optional photos
 - **Compare** — select up to 3 listings and compare side-by-side
 - **My listings** — create/edit, remove (→ Inactive), reactivate; Active listings
   auto-expire after 15 days; Inactive listings are purged after ~2 months
@@ -54,6 +54,7 @@ you want to help.
      with `http://localhost:3000/api/auth/google/callback` (and your deployed
      callback URLs) as authorized redirect URIs
    - `CRON_SECRET` — `openssl rand -base64 32` (must match Vercel Cron config)
+   - `BLOB_READ_WRITE_TOKEN` — from Vercel → Storage → Blob (see [Blob docs](https://vercel.com/docs/storage/vercel-blob))
 
 3. Apply migrations:
 
@@ -82,6 +83,7 @@ For **Production** and again for **Preview** (separate values each time):
 | `SESSION_SECRET` | Distinct `openssl rand -base64 32` |
 | `CRON_SECRET` | Distinct `openssl rand -base64 32` |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Prefer separate OAuth clients; at minimum register distinct redirect URIs for prod vs preview hostnames |
+| `BLOB_READ_WRITE_TOKEN` | Vercel Blob store token for photo uploads |
 
 Also:
 
@@ -104,13 +106,11 @@ Optional hardening: create an `app_user` LOGIN role in SQL (not Console), grant
 DML on `"Listing"`, point the app `DATABASE_URL` at it, and keep an owner URL
 for migrations only.
 
-### Google Drive media
+### Listing photos
 
-Posters paste a Drive (or other allowlisted cloud) link. Prefer sharing with
-“anyone at nyu.edu with the link.” Viewers must be signed into their NYU Google
-account for org-restricted content — the app cannot bypass Drive ACLs. Detail
-and compare UIs embed when possible and always offer an “Open in Google Drive”
-fallback.
+Posters upload up to 6 JPG/PNG/WEBP images per listing (2MB each before
+compression). The server resizes to ≤1600px longest edge and stores WebP in
+Vercel Blob. Photos display inline in cards, detail, and compare views.
 
 ## Testing
 
@@ -120,7 +120,7 @@ npm run test:watch
 ```
 
 Unit tests cover Google domain/email verification, listing filters, lifecycle
-thresholds, and media URL allowlisting/embed resolution.
+thresholds, and photo compression.
 Full request/response integration testing needs a real Postgres database and a
 live Google OAuth round trip.
 

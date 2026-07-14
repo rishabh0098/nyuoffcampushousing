@@ -25,6 +25,7 @@ export async function GET(request: Request) {
 
   const listings = await prisma.listing.findMany({
     where: { id: { in: ids }, status: "Active" },
+    include: { photos: true },
   });
 
   // Preserve the caller's selection order rather than whatever order the DB
