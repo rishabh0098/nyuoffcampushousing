@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { Fraunces, Geist } from "next/font/google";
 import Script from "next/script";
 import { SiteFooter } from "@/components/site-footer";
@@ -52,6 +53,7 @@ export default function RootLayout({
           {children}
           <SiteFooter />
         </div>
+        <Analytics />
       </body>
     </html>
   );
