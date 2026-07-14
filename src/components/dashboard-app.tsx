@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import type { Listing, ListingPhoto } from "@prisma/client";
 import { ListingCard } from "@/components/listing-card";
 import { ListingFilterForm } from "@/components/listing-filter-form";
 import { CompareToggle } from "@/components/compare-toggle";
@@ -17,6 +16,13 @@ import { ListingFormModal } from "@/components/listing-form-modal";
 import { getGlossaryEntries } from "@/lib/glossary";
 import { useDashboardNav } from "@/lib/dashboard-nav-context";
 import {
+  type CardListing,
+  normalizeCardListings,
+  normalizeMinePayload,
+  readCachedCardListings,
+  readCachedMinePayload,
+} from "@/lib/card-listing";
+import {
   clearCachedBucket,
   formatRetrySeconds,
   getFetchGate,
@@ -25,19 +31,6 @@ import {
   writeCachedJson,
 } from "@/lib/tab-data-cache";
 import { IconPlus, IconRefresh } from "@/components/icons";
-
-type CardListing = Pick<
-  Listing,
-  | "id"
-  | "title"
-  | "rentCents"
-  | "campus"
-  | "distanceFromCampusMiles"
-  | "bedrooms"
-  | "bathrooms"
-  | "furnishedStatus"
-  | "vegPreferred"
-> & { photos: Pick<ListingPhoto, "id" | "url">[] };
 
 type MinePayload = { active: CardListing[]; inactive: CardListing[] };
 
@@ -86,9 +79,9 @@ function AvailablePanel({
 
   const load = useCallback(
     async (opts: { force: boolean; bypassRateLimit: boolean }) => {
-      const cached = readCachedJson<CardListing[]>("available", filterQuery);
+      const cached = readCachedCardListings(readCachedJson<unknown>("available", filterQuery));
 
-      if (!opts.force && cached) {
+      if (!opts.force && cached !== null) {
         setListings(cached);
         setError(null);
         setRateLimitedSeconds(null);
@@ -98,7 +91,7 @@ function AvailablePanel({
       if (!opts.bypassRateLimit) {
         const gate = getFetchGate("available");
         if (!gate.allowed) {
-          if (cached) {
+          if (cached !== null) {
             setListings(cached);
             setError(null);
           } else {
@@ -119,9 +112,10 @@ function AvailablePanel({
           setError("Could not load listings.");
           return;
         }
-        const data = (await res.json()) as { listings: CardListing[] };
-        setListings(data.listings);
-        writeCachedJson("available", filterQuery, data.listings);
+        const data = (await res.json()) as { listings?: unknown };
+        const listings = normalizeCardListings(data.listings);
+        setListings(listings);
+        writeCachedJson("available", filterQuery, listings);
         markFetched("available");
         setRateLimitedSeconds(null);
       } catch {
@@ -232,9 +226,9 @@ function MyListingsPanel({
   const [rateLimitedSeconds, setRateLimitedSeconds] = useState<number | null>(null);
 
   const load = useCallback(async (opts: { force: boolean; bypassRateLimit: boolean }) => {
-    const cached = readCachedJson<MinePayload>("mine");
+    const cached = readCachedMinePayload(readCachedJson<unknown>("mine"));
 
-    if (!opts.force && cached) {
+    if (!opts.force && cached !== null) {
       setData(cached);
       setError(null);
       setRateLimitedSeconds(null);
@@ -244,7 +238,7 @@ function MyListingsPanel({
     if (!opts.bypassRateLimit) {
       const gate = getFetchGate("mine");
       if (!gate.allowed) {
-        if (cached) {
+        if (cached !== null) {
           setData(cached);
           setError(null);
         } else {
@@ -263,7 +257,7 @@ function MyListingsPanel({
         setError("Could not load your listings.");
         return;
       }
-      const payload = (await res.json()) as MinePayload;
+      const payload = normalizeMinePayload(await res.json());
       setData(payload);
       writeCachedJson("mine", "", payload);
       markFetched("mine");

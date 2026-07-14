@@ -91,7 +91,7 @@ function DetailBody({ listing }: { listing: DetailListing }) {
         </p>
       </div>
 
-      {listing.photos.length > 0 && (
+      {listing.photos && listing.photos.length > 0 && (
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {listing.photos.map((photo, index) => (
             <Image

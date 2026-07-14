@@ -2,8 +2,10 @@
 
 import { CLIENT_FETCH_MIN_INTERVAL_MS } from "@/lib/constants";
 
-const FETCH_AT_PREFIX = "nyu-och:fetchAt:";
-const DATA_PREFIX = "nyu-och:data:";
+// Bump when cached listing payloads change shape (e.g. mediaLink → photos).
+const CACHE_VERSION = "v2";
+const FETCH_AT_PREFIX = `nyu-och:${CACHE_VERSION}:fetchAt:`;
+const DATA_PREFIX = `nyu-och:${CACHE_VERSION}:data:`;
 
 export type CacheBucket = "available" | "mine";
 

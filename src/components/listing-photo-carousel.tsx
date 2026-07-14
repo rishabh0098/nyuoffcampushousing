@@ -12,13 +12,14 @@ import type { ListingPhoto } from "@prisma/client";
 export function ListingPhotoCarousel({
   photos,
 }: {
-  photos: Pick<ListingPhoto, "id" | "url">[];
+  photos: Pick<ListingPhoto, "id" | "url">[] | undefined;
 }) {
   const [index, setIndex] = useState(0);
+  const safePhotos = photos ?? [];
 
   // Keep the same reserved image height on every card — even ones without a
   // photo — so titles/prices stay aligned across a row instead of jumping up.
-  if (photos.length === 0) {
+  if (safePhotos.length === 0) {
     return (
       <div className="flex aspect-[4/3] items-center justify-center rounded-lg bg-surface text-xs text-ink-soft">
         No photo
@@ -29,20 +30,20 @@ export function ListingPhotoCarousel({
   const goTo = (next: number, event: React.MouseEvent) => {
     event.preventDefault();
     event.stopPropagation();
-    setIndex((next + photos.length) % photos.length);
+    setIndex((next + safePhotos.length) % safePhotos.length);
   };
 
   return (
     <div className="group relative aspect-[4/3] overflow-hidden rounded-lg bg-surface">
       <Image
-        src={photos[index].url}
+        src={safePhotos[index].url}
         alt=""
         fill
         sizes="(min-width: 1024px) 320px, 50vw"
         className="object-cover"
       />
 
-      {photos.length > 1 && (
+      {safePhotos.length > 1 && (
         <>
           <button
             type="button"
@@ -61,7 +62,7 @@ export function ListingPhotoCarousel({
             ›
           </button>
           <div className="absolute bottom-1.5 left-1/2 flex -translate-x-1/2 gap-1">
-            {photos.map((photo, i) => (
+            {safePhotos.map((photo, i) => (
               <span
                 key={photo.id}
                 className={`h-1.5 w-1.5 rounded-full ${i === index ? "bg-white" : "bg-white/50"}`}
