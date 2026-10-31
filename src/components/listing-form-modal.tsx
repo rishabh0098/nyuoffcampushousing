@@ -8,6 +8,9 @@ import { ModalCloseButton } from "@/components/icons";
 
 type EditableListing = Listing & { photos: ListingPhoto[] };
 
+// Date-only fields round-trip through zod's `z.coerce.date()`, which parses
+// "yyyy-mm-dd" as UTC midnight. Slice the UTC calendar date so a viewer
+// east of UTC doesn't see the previous day in the edit form.
 function toDateInputValue(date: string | Date | null | undefined): string | undefined {
   if (!date) return undefined;
   const d = typeof date === "string" ? new Date(date) : date;

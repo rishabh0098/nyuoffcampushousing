@@ -112,6 +112,8 @@ export function DashboardNavProvider({ children }: { children: React.ReactNode }
 
   const setFilterQuery = useCallback(
     (filters: string) => {
+      // replace: each Apply shouldn't add a history entry the back button
+      // has to step through one filter set at a time.
       commit(
         () => ({
           tab: "available",
@@ -171,6 +173,8 @@ export function DashboardNavProvider({ children }: { children: React.ReactNode }
   );
 
   const closeModal = useCallback(() => {
+    // replace: open pushed the modal URL, so close must overwrite it.
+    // A second push would make Back reopen the modal.
     commit(
       (prev) => ({
         ...prev,
@@ -183,6 +187,8 @@ export function DashboardNavProvider({ children }: { children: React.ReactNode }
   }, [commit]);
 
   const goToMine = useCallback(() => {
+    // replace: called after a successful save, which should land on My
+    // listings without leaving the add/edit URL on the back stack.
     commit(
       (prev) => ({
         tab: "mine",

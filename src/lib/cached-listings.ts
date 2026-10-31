@@ -12,6 +12,9 @@ export const LISTINGS_CACHE_TAG = "listings";
 export const MY_LISTINGS_CACHE_TAG = "listings-mine";
 
 function serializeFilters(filters: ListingFilters): string {
+  // Every key is always present (null when unset) so two equivalent filter
+  // sets hash to the same unstable_cache key. Omitted fields or key order
+  // would otherwise fragment the cache.
   return JSON.stringify({
     minRentCents: filters.minRentCents ?? null,
     maxRentCents: filters.maxRentCents ?? null,
@@ -60,6 +63,8 @@ export function getCachedMyListings(posterEmail: string) {
 }
 
 export function invalidateListingsCaches() {
+  // "max" is Next's cacheLife profile for "expire this tag now" — otherwise
+  // a mutation would keep serving the previous result for the read TTL.
   revalidateTag(LISTINGS_CACHE_TAG, "max");
   revalidateTag(MY_LISTINGS_CACHE_TAG, "max");
 }

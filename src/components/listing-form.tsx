@@ -83,6 +83,9 @@ export function ListingForm({
     try {
       const form = new FormData(e.currentTarget);
 
+      // Upload each new file first and only then send the Blob URLs.
+      // Edit is additive: existing photos stay on the listing and are not
+      // re-sent here (updateListing never deletes ListingPhoto rows).
       const photoUrls: string[] = [];
       for (const file of photos.slice(0, remainingPhotoSlots)) {
         if (file.size > MAX_PHOTO_SIZE_BYTES) {
@@ -103,6 +106,7 @@ export function ListingForm({
       const payload = {
         title: form.get("title"),
         description: form.get("description"),
+        // The field is dollars; the API and DB store integer cents.
         rentCents: Math.round(Number(form.get("rent")) * 100),
         area: form.get("area"),
         campus: form.get("campus"),

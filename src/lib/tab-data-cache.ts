@@ -19,6 +19,8 @@ function dataKey(bucket: CacheBucket, suffix = ""): string {
 
 function storage(): Storage | null {
   if (typeof window === "undefined") return null;
+  // sessionStorage throws in some private-browsing modes. Treat that as
+  // "no cache" so a blocked store doesn't fail the listings panels.
   try {
     return window.sessionStorage;
   } catch {
@@ -56,7 +58,11 @@ export function clearCachedBucket(bucket: CacheBucket, suffix = ""): void {
   s?.removeItem(fetchAtKey(bucket, suffix));
 }
 
-/** Rate limit for refresh / reload network calls. Mutations should bypass. */
+/**
+ * Rate limit for refresh / reload network calls. Mutations should bypass.
+ * `suffix` scopes the timestamp the same way data keys are scoped; callers
+ * that omit it share one cooldown for the whole bucket.
+ */
 export function getFetchGate(
   bucket: CacheBucket,
   suffix = ""

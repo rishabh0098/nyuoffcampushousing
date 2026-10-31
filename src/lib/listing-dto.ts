@@ -6,6 +6,8 @@ export function toPublicListing<T extends { posterEmail: string }>(
   listing: T
 ): Omit<T, "posterEmail"> {
   const { posterEmail, ...rest } = listing;
+  // Discarded on purpose: the public payload must not include the poster's
+  // Google account. The void marks that unused binding as intentional.
   void posterEmail;
   return rest;
 }
