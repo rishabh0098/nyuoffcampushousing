@@ -52,5 +52,7 @@ export default async function proxy(request: NextRequest) {
 }
 
 export const config = {
+  // Skip Next's own static assets. Pages and API routes still run the
+  // session check above.
   matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };

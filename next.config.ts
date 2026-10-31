@@ -53,6 +53,8 @@ const nextConfig: NextConfig = {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
   async redirects() {
+    // Bookmarks from before the single-page dashboard. Each old path lands
+    // on the matching tab or modal query on /listings.
     return [
       { source: "/my-listings", destination: "/listings?tab=mine", permanent: false },
       { source: "/glossary", destination: "/listings?tab=glossary", permanent: false },

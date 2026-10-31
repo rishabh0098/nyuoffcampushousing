@@ -128,6 +128,8 @@ function AvailablePanel({
   );
 
   useEffect(() => {
+    // Defer so a sessionStorage cache hit doesn't call setState synchronously
+    // inside the effect. The timeout still runs before the next paint.
     const id = window.setTimeout(() => {
       void load({ force: false, bypassRateLimit: false });
     }, 0);
@@ -135,6 +137,10 @@ function AvailablePanel({
   }, [load]);
 
   useEffect(() => {
+    // 0 is the mount value, not a mutation. A real bump (create/edit/remove/
+    // reactivate) drops this filter's cache and refetches immediately.
+    // filterQuery is read but not a dependency: changing filters is handled
+    // by `load`, and must not look like a mutation.
     if (mutationNonce === 0) return;
     clearCachedBucket("available", filterQuery);
     const id = window.setTimeout(() => {
@@ -270,6 +276,7 @@ function MyListingsPanel({
   }, []);
 
   useEffect(() => {
+    // Same deferred setState as AvailablePanel — see the comment there.
     const id = window.setTimeout(() => {
       void load({ force: false, bypassRateLimit: false });
     }, 0);
@@ -277,6 +284,7 @@ function MyListingsPanel({
   }, [load]);
 
   useEffect(() => {
+    // 0 is the mount value, not a mutation. See AvailablePanel.
     if (mutationNonce === 0) return;
     clearCachedBucket("mine");
     const id = window.setTimeout(() => {
@@ -441,6 +449,8 @@ export function DashboardApp() {
 
   return (
     <>
+      {/* hidden, not unmounted: switching tabs keeps panel state and
+          avoids a refetch when the user comes back. */}
       <div hidden={tab !== "available"}>
         <AvailablePanel
           filterQuery={filterQuery}

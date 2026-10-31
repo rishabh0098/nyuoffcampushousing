@@ -72,6 +72,8 @@ export function normalizeCardListings(value: unknown): CardListing[] {
         furnishedStatus,
         vegPreferred,
         photos: normalizePhotos(photos),
+        // The checks above narrow the JSON shape, not Prisma's enum unions,
+        // so the row still needs an assertion to be a CardListing.
       } as CardListing,
     ];
   });

@@ -4,6 +4,7 @@ import { ListingFiltersValidationError, parseListingFilters } from "@/lib/listin
 import { getCachedActiveListings } from "@/lib/cached-listings";
 import { toPublicListings } from "@/lib/listing-dto";
 
+/** R7, R8 — Active listings matching the query, with poster identity stripped. */
 export async function GET(request: Request) {
   await verifySession();
   const { searchParams } = new URL(request.url);

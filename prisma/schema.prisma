@@ -107,6 +107,7 @@ model Listing {
 
   @@index([status])
   @@index([posterEmail])
+  // Lifecycle job: expire Active rows by activatedAt, purge Inactive by inactivatedAt.
   @@index([status, activatedAt])
   @@index([status, inactivatedAt])
 }

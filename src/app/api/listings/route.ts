@@ -4,6 +4,7 @@ import { createListing, ListingInputSchema } from "@/lib/listings";
 import { invalidateListingsCaches } from "@/lib/cached-listings";
 import { forbidCrossOrigin } from "@/lib/same-origin";
 
+/** R10–R13 — create a listing owned by the verified session email. */
 export async function POST(request: Request) {
   const forbidden = forbidCrossOrigin(request);
   if (forbidden) return forbidden;

@@ -24,6 +24,9 @@ export function ListingFilterForm({
     e.preventDefault();
     const form = new FormData(e.currentTarget);
     const params = new URLSearchParams();
+    // Empty "Any …" selects are omitted so they don't become filters.
+    // Checkboxes submit the string "true" (ListingFiltersQuerySchema only
+    // accepts "true" | "false"); an unchecked box is absent from FormData.
     for (const [key, value] of form.entries()) {
       if (typeof value === "string" && value !== "") params.set(key, value);
     }

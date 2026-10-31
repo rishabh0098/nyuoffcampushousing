@@ -21,6 +21,8 @@ export async function GET(request: NextRequest) {
 
   const cookieStore = await cookies();
   const expectedState = cookieStore.get(OAUTH_STATE_COOKIE_NAME)?.value;
+  // Single use: drop the cookie before comparing so a replayed callback
+  // cannot present the same state again.
   cookieStore.delete(OAUTH_STATE_COOKIE_NAME);
 
   if (oauthError || !code || !state || !expectedState || state !== expectedState) {

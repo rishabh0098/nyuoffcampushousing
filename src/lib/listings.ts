@@ -88,9 +88,12 @@ export async function createListing(posterEmail: string, input: ListingInput): P
 }
 
 /**
- * Edits an Active listing's fields. Photos are additive-only here (existing
- * photos are kept, any newly uploaded ones are appended) — there's no
- * "remove a photo" flow yet, so this never deletes a `ListingPhoto` row.
+ * Edits an Active listing's fields. Uses updateMany (not update) so a missing
+ * row, a different owner, or an Inactive listing is a 0-count — the same
+ * OwnershipError — instead of an error that distinguishes those cases.
+ * Photos are additive-only here (existing photos are kept, any newly uploaded
+ * ones are appended) — there's no "remove a photo" flow yet, so this never
+ * deletes a `ListingPhoto` row.
  */
 export async function updateListing(
   id: string,

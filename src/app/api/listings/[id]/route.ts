@@ -58,6 +58,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     invalidateListingsCaches();
     return NextResponse.json({ listing });
   } catch (error) {
+    // Missing, unowned, and Inactive rows all surface as the same 404.
     if (error instanceof OwnershipError) {
       return NextResponse.json({ error: "Listing not found." }, { status: 404 });
     }
@@ -76,6 +77,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     await removeListing(id, session.email);
     invalidateListingsCaches();
   } catch (error) {
+    // Missing, unowned, and already-Inactive rows all surface as the same 404.
     if (error instanceof OwnershipError) {
       return NextResponse.json({ error: "Listing not found." }, { status: 404 });
     }
